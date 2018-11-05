@@ -46,7 +46,7 @@ shadowJar {
     classifier = 'fat'
 
     manifest {
-        attributes 'Main-Verticle': 'io.github.spair.ssrepoworker.MainVerticle'
+        attributes 'Main-Verticle': 'io.github.spair.repoxbot.MainVerticle'
     }
 
     mergeServiceFiles {
@@ -57,7 +57,7 @@ shadowJar {
 task cleanProject(type: Delete, group: 'build') {
     description = 'Deletes the build directory and project generated files.'
     dependsOn clean
-    delete "${projectDir}/.vertx", "${projectDir}/ssrepoworker.log", "${projectDir}/ssrepoworker.log.lck"
+    delete "${projectDir}/.vertx", "${projectDir}/logs"
 }
 
 task ktlint(type: JavaExec, group: 'verification') {
