@@ -10,15 +10,10 @@ class EntryPointVerticle : AbstractVerticle() {
     override fun start(startFuture: Future<Void>) {
         vertx.createHttpServer().requestHandler { request ->
             when (request.path()) {
-                getConfigProp(ENTRY_POINT) -> handle(request)
+                getConfig(ENTRY_POINT) -> handle(request)
                 else -> request.response().setStatusCode(HttpURLConnection.HTTP_NOT_FOUND).end()
             }
-        }.listen(getConfigProp(PORT).toInt()) {
-            when (it.succeeded()) {
-                true -> startFuture.complete()
-                else -> startFuture.fail(it.cause())
-            }
-        }
+        }.listen(getConfig(PORT).toInt(), reporter(startFuture))
     }
 
     private fun handle(request: HttpServerRequest) {

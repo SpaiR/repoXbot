@@ -2,16 +2,12 @@ package io.github.spair.repoxbot
 
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
+import io.vertx.core.CompositeFuture
 import io.vertx.core.logging.LoggerFactory
 import java.io.File
 import java.lang.IllegalStateException
 
 class MainVerticle : AbstractVerticle() {
-
-    private val defaultPort = "8080"
-    private val defaultEntryPoint = "/handle"
-
-    private val verticlesToDeploy = listOf(EntryPointVerticle::class.java.name)
 
     private val logger = LoggerFactory.getLogger(MainVerticle::class.java)
 
@@ -21,8 +17,7 @@ class MainVerticle : AbstractVerticle() {
 
     override fun start(startFuture: Future<Void>) {
         initializeConfig()
-        deployVerticles()
-        startFuture.complete()
+        deployVerticles(startFuture)
     }
 
     private fun initializeConfig() {
@@ -39,23 +34,24 @@ class MainVerticle : AbstractVerticle() {
         setConfigOrThrow(GITHUB_TOKEN)
         setConfigOrThrow(GITHUB_SECRET)
 
-        setConfigOrDefault(PORT, defaultPort)
-        setConfigOrDefault(ENTRY_POINT, defaultEntryPoint)
+        setConfigOrDefault(PORT, DEFAULT_PORT)
+        setConfigOrDefault(ENTRY_POINT, DEFAULT_ENTRY_POINT)
 
         logger.info("Configuration initialized! " +
                 "RepoXBot now works with next GitHub repository: ${sharedConfig[GITHUB_ORG]}/${sharedConfig[GITHUB_REPO]}; " +
-                "Entry point: '${sharedConfig[ENTRY_POINT]}'; Port: '${sharedConfig[PORT]}'")
+                "Entry point: '${sharedConfig[ENTRY_POINT]}'; Port: '${sharedConfig[PORT]}'"
+        )
     }
 
-    private fun deployVerticles() {
-        verticlesToDeploy.forEach { verticleName ->
-            vertx.deployVerticle(verticleName) { deployResult ->
-                if (deployResult.succeeded()) {
-                    logger.info("Verticle '$verticleName' deployed")
-                } else {
-                    throw IllegalStateException("Fail to deploy $verticleName", deployResult.cause())
-                }
-            }
+    private fun deployVerticles(future: Future<Void>) {
+        CompositeFuture.all(listOf(initVerticle(EntryPointVerticle::class.java.name))).setHandler(reporter(future) {
+            logger.info("All verticles deployed")
+        })
+    }
+
+    private fun initVerticle(verticleName: String): Future<Void> {
+        return Future.future<Void>().also {
+            vertx.deployVerticle(verticleName, reporter(it) { logger.info("Verticle '$verticleName' deployed") })
         }
     }
 }

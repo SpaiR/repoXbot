@@ -7,3 +7,6 @@ const val GITHUB_SECRET = "github_secret"
 
 const val PORT = "port"
 const val ENTRY_POINT = "entry_point"
+
+const val DEFAULT_PORT = "8080"
+const val DEFAULT_ENTRY_POINT = "/handle"
