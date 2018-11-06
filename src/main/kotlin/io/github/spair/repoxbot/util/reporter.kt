@@ -1,4 +1,4 @@
-package io.github.spair.repoxbot
+package io.github.spair.repoxbot.util
 
 import io.vertx.core.AsyncResult
 import io.vertx.core.Future

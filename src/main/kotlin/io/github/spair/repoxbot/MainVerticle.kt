@@ -1,11 +1,13 @@
 package io.github.spair.repoxbot
 
+import io.github.spair.repoxbot.constant.*  // ktlint-disable
+import io.github.spair.repoxbot.util.reporter
+import io.github.spair.repoxbot.util.sharedConfig
 import io.vertx.core.AbstractVerticle
-import io.vertx.core.Future
 import io.vertx.core.CompositeFuture
+import io.vertx.core.Future
 import io.vertx.core.logging.LoggerFactory
 import java.io.File
-import java.lang.IllegalStateException
 
 class MainVerticle : AbstractVerticle() {
 

@@ -1,4 +1,4 @@
-package io.github.spair.repoxbot
+package io.github.spair.repoxbot.constant
 
 const val GITHUB_REPO = "github_repo"
 const val GITHUB_ORG = "github_org"
