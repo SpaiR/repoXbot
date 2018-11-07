@@ -38,6 +38,7 @@ class MainVerticle : AbstractVerticle() {
 
         setConfigOrDefault(PORT, DEFAULT_PORT)
         setConfigOrDefault(ENTRY_POINT, DEFAULT_ENTRY_POINT)
+        setConfigOrDefault(CHECK_SIGN, DEFAULT_CHECK_SIGN)
 
         logger.info("Configuration initialized! " +
                 "RepoXBot now works with next GitHub repository: ${sharedConfig[GITHUB_ORG]}/${sharedConfig[GITHUB_REPO]}; " +

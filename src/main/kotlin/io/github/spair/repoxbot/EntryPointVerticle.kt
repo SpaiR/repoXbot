@@ -11,8 +11,8 @@ import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
-import java.net.HttpURLConnection
 import com.fasterxml.jackson.core.JsonParseException
+import java.net.HttpURLConnection
 
 class EntryPointVerticle : AbstractVerticle() {
 
@@ -46,7 +46,9 @@ class EntryPointVerticle : AbstractVerticle() {
                 val secretKey = getSharedConfig(GITHUB_SECRET)
                 val payload = body.toJsonObject()
 
-                if (Signature.isEqualSignature(signature, secretKey, payload.toString())) {
+                val shouldCheckSign = getSharedConfig(CHECK_SIGN).toBoolean()
+
+                if (!shouldCheckSign || (shouldCheckSign && Signature.isCorrectSignature(signature, secretKey, payload.toString()))) {
                     val response = processPayload(request.headers()[EVENT_HEADER], payload)
                     request.response().setStatusCode(HttpURLConnection.HTTP_OK).end(response)
                 } else {
@@ -66,9 +68,9 @@ class EntryPointVerticle : AbstractVerticle() {
             PING_EVENT -> {
                 val zen = payload.getString("zen")
                 logger.info("Ping event caught. Zen: $zen")
-                zen
+                "Pong! Zen was: '$zen'"
             }
             else -> "Unknown event caught. Event: $event"
-        } ?: "Empty response"
+        }
     }
 }

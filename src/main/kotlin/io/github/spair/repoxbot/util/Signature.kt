@@ -8,7 +8,7 @@ object Signature {
     private const val HMAC_SHA1_ALGORITHM = "HmacSHA1"
     private val hexArray = "0123456789ABCDEF".toCharArray()
 
-    fun isEqualSignature(signature: String, secretKey: String, xData: String): Boolean {
+    fun isCorrectSignature(signature: String, secretKey: String, xData: String): Boolean {
         val signingKey = SecretKeySpec(secretKey.toByteArray(), HMAC_SHA1_ALGORITHM)
         val mac = Mac.getInstance(HMAC_SHA1_ALGORITHM).apply { init(signingKey) }
         return signature.equals(toHextString(mac.doFinal(xData.toByteArray())), ignoreCase = true)
