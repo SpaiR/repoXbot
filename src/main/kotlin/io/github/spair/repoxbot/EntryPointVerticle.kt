@@ -2,7 +2,7 @@ package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
 import io.github.spair.repoxbot.dto.codec.JsonToPullRequestCodec
-import io.github.spair.repoxbot.util.Signature
+import io.github.spair.repoxbot.logic.isCorrectSignature
 import io.github.spair.repoxbot.util.getSharedConfig
 import io.github.spair.repoxbot.util.reporter
 import io.github.spair.repoxbot.util.send
@@ -52,7 +52,7 @@ class EntryPointVerticle : AbstractVerticle() {
 
                 val shouldCheckSign = getSharedConfig(CHECK_SIGN).toBoolean()
 
-                if (!shouldCheckSign || (shouldCheckSign && Signature.isCorrectSignature(signature, secretKey, payload.toString()))) {
+                if (!shouldCheckSign || (shouldCheckSign && isCorrectSignature(signature, secretKey, payload.toString()))) {
                     val response = processPayload(request.headers()[EVENT_HEADER], payload)
                     request.response().setStatusCode(HttpURLConnection.HTTP_OK).end(response)
                 } else {
