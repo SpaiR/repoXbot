@@ -1,6 +1,7 @@
 package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
+import io.github.spair.repoxbot.dto.codec.JsonToPullRequestCodec
 import io.github.spair.repoxbot.util.reporter
 import io.github.spair.repoxbot.util.sharedConfig
 import io.vertx.core.AbstractVerticle
@@ -19,13 +20,14 @@ class MainVerticle : AbstractVerticle() {
 
     override fun start(startFuture: Future<Void>) {
         initializeConfig()
+        registerEventBusCodecs()
         deployVerticles(startFuture)
     }
 
     private fun initializeConfig() {
         val setConfigOrThrow = { propName: String ->
             sharedConfig[propName] = System.getProperty(propName)
-                    ?: throw IllegalStateException("'$propName' value should be specified as system variable")
+                ?: throw IllegalStateException("'$propName' value should be specified as system variable")
         }
         val setConfigOrDefault = { propName: String, default: String ->
             sharedConfig[propName] = System.getProperty(propName) ?: default
@@ -41,13 +43,21 @@ class MainVerticle : AbstractVerticle() {
         setConfigOrDefault(CHECK_SIGN, DEFAULT_CHECK_SIGN)
 
         logger.info("Configuration initialized! " +
-                "RepoXBot now works with next GitHub repository: ${sharedConfig[GITHUB_ORG]}/${sharedConfig[GITHUB_REPO]}; " +
-                "Entry point: '${sharedConfig[ENTRY_POINT]}'; Port: '${sharedConfig[PORT]}'"
+            "RepoXBot now works with next GitHub repository: ${sharedConfig[GITHUB_ORG]}/${sharedConfig[GITHUB_REPO]}; " +
+            "Entry point: '${sharedConfig[ENTRY_POINT]}'; Port: '${sharedConfig[PORT]}'"
         )
     }
 
+    private fun registerEventBusCodecs() {
+        vertx.eventBus().registerCodec(JsonToPullRequestCodec())
+        logger.info("Event bus codecs registered")
+    }
+
     private fun deployVerticles(future: Future<Void>) {
-        CompositeFuture.all(listOf(initVerticle(EntryPointVerticle::class.java.name))).setHandler(reporter(future) {
+        CompositeFuture.all(listOf(
+            initVerticle(EntryPointVerticle::class.java.name),
+            initVerticle(PullRequestVerticle::class.java.name)
+        )).setHandler(reporter(future) {
             logger.info("All verticles deployed")
         })
     }

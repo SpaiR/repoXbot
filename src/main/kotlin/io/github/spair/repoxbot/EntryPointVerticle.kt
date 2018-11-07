@@ -1,9 +1,11 @@
 package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
+import io.github.spair.repoxbot.dto.codec.JsonToPullRequestCodec
 import io.github.spair.repoxbot.util.Signature
 import io.github.spair.repoxbot.util.getSharedConfig
 import io.github.spair.repoxbot.util.reporter
+import io.github.spair.repoxbot.util.send
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
 import io.vertx.core.http.HttpHeaders
@@ -31,12 +33,14 @@ class EntryPointVerticle : AbstractVerticle() {
     }
 
     private fun isValidRequest(request: HttpServerRequest): Boolean {
-        return with(request) {
-            method() == HttpMethod.POST && path() == getSharedConfig(ENTRY_POINT) && with(headers()) {
-                contains(HttpHeaders.CONTENT_TYPE) && this[HttpHeaders.CONTENT_TYPE] == APPLICATION_JSON &&
-                    contains(SIGNATURE) && contains(EVENT_HEADER)
-            }
-        }
+        val methodIsPost = request.method() == HttpMethod.POST
+        val entryPointValid = request.path() == getSharedConfig(ENTRY_POINT)
+        val contentTypeValid = request.headers().contains(HttpHeaders.CONTENT_TYPE) &&
+            request.getHeader(HttpHeaders.CONTENT_TYPE) == APPLICATION_JSON
+        val signHeaderChecked = (getSharedConfig(CHECK_SIGN).toBoolean() && request.headers().contains(SIGNATURE)) ||
+            !getSharedConfig(CHECK_SIGN).toBoolean()
+        val hasEventHeader = request.headers().contains(EVENT_HEADER)
+        return methodIsPost && entryPointValid && contentTypeValid && signHeaderChecked && hasEventHeader
     }
 
     private fun handle(request: HttpServerRequest) {
@@ -65,12 +69,16 @@ class EntryPointVerticle : AbstractVerticle() {
 
     private fun processPayload(event: String, payload: JsonObject): String {
         return when (event) {
-            PING_EVENT -> {
+            EVENT_PING -> {
                 val zen = payload.getString("zen")
                 logger.info("Ping event caught. Zen: $zen")
                 "Pong! Zen was: '$zen'"
             }
-            else -> "Unknown event caught. Event: $event"
+            EVENT_PULL_REQUEST -> {
+                vertx.eventBus().send(EB_EVENT_PULL_REQUEST, payload, JsonToPullRequestCodec.NAME)
+                "Pull request event caught. Async handling in process."
+            }
+            else -> "Unexpected event ($event) caught."
         }
     }
 }
