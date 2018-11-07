@@ -37,9 +37,12 @@ class EntryPointVerticle : AbstractVerticle() {
         val entryPointValid = request.path() == getSharedConfig(ENTRY_POINT)
         val contentTypeValid = request.headers().contains(HttpHeaders.CONTENT_TYPE) &&
             request.getHeader(HttpHeaders.CONTENT_TYPE) == APPLICATION_JSON
-        val signHeaderChecked = (getSharedConfig(CHECK_SIGN).toBoolean() && request.headers().contains(SIGNATURE)) ||
-            !getSharedConfig(CHECK_SIGN).toBoolean()
+
+        val shouldCheckSign = getSharedConfig(CHECK_SIGN).toBoolean()
+        val signHeaderChecked = !shouldCheckSign || (shouldCheckSign && request.headers().contains(SIGNATURE))
+
         val hasEventHeader = request.headers().contains(EVENT_HEADER)
+
         return methodIsPost && entryPointValid && contentTypeValid && signHeaderChecked && hasEventHeader
     }
 
