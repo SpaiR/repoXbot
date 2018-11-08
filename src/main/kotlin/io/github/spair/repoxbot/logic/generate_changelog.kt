@@ -5,7 +5,6 @@ import io.github.spair.repoxbot.dto.ChangelogEntry
 import io.github.spair.repoxbot.dto.PullRequest
 
 private val clText = ":cl:((?:.|\\n|\\r)*+)|\uD83C\uDD91((?:.|\\n|\\r)*+)".toRegex()
-private val authorBeforeChanges = ".*".toRegex()
 private val clRowWithClass = "-[ ](\\w+)(\\[link])?:[ ](.+)".toRegex()
 
 fun generateChangelog(pullRequest: PullRequest): Changelog? {
@@ -13,8 +12,7 @@ fun generateChangelog(pullRequest: PullRequest): Changelog? {
 }
 
 private fun findChangelogText(pullRequestBody: String): String? {
-    val strippedBody = pullRequestBody.replace("(?s)<!--.*?-->".toRegex(), "")
-    return clText.toPattern().matcher(strippedBody).let {
+    return clText.toPattern().matcher(pullRequestBody.sanitize()).let {
         if (it.find()) {
             (it.group(1) ?: it.group(2))!!
         } else {
@@ -24,7 +22,7 @@ private fun findChangelogText(pullRequestBody: String): String? {
 }
 
 private fun parseChangelog(changelogText: String, pullRequest: PullRequest): Changelog {
-    val author = authorBeforeChanges.toPattern().matcher(changelogText).let { if (it.find()) it.group().trim() else null }
+    val author = getAuthor(changelogText, pullRequest.author)
     val changelogEntries = mutableListOf<ChangelogEntry>()
 
     changelogText.reader().forEachLine { line ->
@@ -38,11 +36,23 @@ private fun parseChangelog(changelogText: String, pullRequest: PullRequest): Cha
         }
     }
 
-    return Changelog(author ?: pullRequest.author, pullRequest.link, pullRequest.number, changelogEntries.toList())
+    return Changelog(author, pullRequest.link, pullRequest.number, changelogEntries.toList())
+}
+
+private fun String.sanitize() = replace("(?s)<!--.*?-->".toRegex(), "").replace("[\\n\\r]".toRegex(), "\n")
+
+private fun getAuthor(changelogText: String, pullRequestAuthor: String): String {
+    return changelogText.substringBefore("\n").let {
+        if (it.isEmpty()) {
+            pullRequestAuthor
+        } else {
+            it
+        }
+    }
 }
 
 private fun String.ensureDotEnd(): String {
     return this[length - 1].let { ch -> if (ch != '.' && ch != '?' && ch != '!') plus('.') else this }
 }
 
-private fun String.addLinkIfNeeded(hasLink:Boolean, link: String) = if (hasLink) plus(" [link:$link]") else this
+private fun String.addLinkIfNeeded(hasLink: Boolean, link: String) = if (hasLink) plus(" [link:$link]") else this

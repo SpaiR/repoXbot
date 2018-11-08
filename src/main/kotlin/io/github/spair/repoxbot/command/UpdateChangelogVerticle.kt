@@ -10,8 +10,8 @@ class UpdateChangelogVerticle : AbstractVerticle() {
     override fun start() {
         vertx.eventBus().let { eventBust ->
             eventBust.localConsumer<PullRequest>(EB_COMMAND_CHANGELOG_UPDATE) { msg ->
-                generateChangelog(msg.body())?.applyIfNotEmpty {
-                    println(this)
+                generateChangelog(msg.body())?.letIfNotEmpty { changelog ->
+                    println(changelog)
                 }
             }
         }

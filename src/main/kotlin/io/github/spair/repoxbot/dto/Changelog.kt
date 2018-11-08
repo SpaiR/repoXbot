@@ -9,9 +9,8 @@ data class Changelog(
 
     fun isEmpty(): Boolean = entries.isEmpty()
 
-    inline fun applyIfNotEmpty(block: Changelog.() -> Unit): Changelog {
+    inline fun <R> letIfNotEmpty(block: (Changelog) -> R) {
         if (!isEmpty()) block(this)
-        return this
     }
 }
 
