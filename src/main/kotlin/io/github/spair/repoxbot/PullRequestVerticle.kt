@@ -8,15 +8,15 @@ import io.vertx.core.AbstractVerticle
 
 class PullRequestVerticle : AbstractVerticle() {
 
+    private val eventBus by lazy { vertx.eventBus() }
+
     override fun start() {
-        vertx.eventBus().let { eventBus ->
-            eventBus.localConsumer<PullRequest>(EB_EVENT_PULLREQUEST) { msg ->
-                println("Pull request consumed: ${msg.body()}") // TODO: remove
-                when (msg.body().action) {
-                    PullRequestAction.MERGED -> eventBus.send(EB_COMMAND_CHANGELOG_UPDATE, msg.body())
-                    PullRequestAction.CLOSED -> TODO()
-                    PullRequestAction.UNDEFINED -> TODO()
-                }
+        eventBus.localConsumer<PullRequest>(EB_EVENT_PULLREQUEST) { msg ->
+            println("Pull request consumed: ${msg.body()}") // TODO: remove
+            when (msg.body().action) {
+                PullRequestAction.MERGED -> eventBus.send(EB_COMMAND_CHANGELOG_UPDATE, msg.body())
+                PullRequestAction.CLOSED -> TODO()
+                PullRequestAction.UNDEFINED -> TODO()
             }
         }
     }
