@@ -78,7 +78,7 @@ class EntryPointVerticle : AbstractVerticle() {
                 "Pong! Zen was: '$zen'"
             }
             EVENT_PULL_REQUEST -> {
-                vertx.eventBus().send(EB_EVENT_PULL_REQUEST, payload, JsonToPullRequestCodec.NAME)
+                vertx.eventBus().send(EB_EVENT_PULLREQUEST, payload, JsonToPullRequestCodec.NAME)
                 "Pull request event caught. Async handling in process."
             }
             else -> "Unexpected event ($event) caught."

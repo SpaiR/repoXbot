@@ -1,7 +1,10 @@
 package io.github.spair.repoxbot
 
+import io.github.spair.repoxbot.command.UpdateChangelogVerticle
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
+import io.github.spair.repoxbot.dto.PullRequest
 import io.github.spair.repoxbot.dto.codec.JsonToPullRequestCodec
+import io.github.spair.repoxbot.dto.codec.PullRequestCodec
 import io.github.spair.repoxbot.util.reporter
 import io.github.spair.repoxbot.util.sharedConfig
 import io.vertx.core.AbstractVerticle
@@ -49,14 +52,18 @@ class MainVerticle : AbstractVerticle() {
     }
 
     private fun registerEventBusCodecs() {
-        vertx.eventBus().registerCodec(JsonToPullRequestCodec())
-        logger.info("Event bus codecs registered")
+        with(vertx.eventBus()) {
+            registerDefaultCodec(PullRequest::class.java, PullRequestCodec())
+            registerCodec(JsonToPullRequestCodec())
+            logger.info("Event bus codecs registered")
+        }
     }
 
     private fun deployVerticles(future: Future<Void>) {
         CompositeFuture.all(listOf(
             initVerticle(EntryPointVerticle::class.java.name),
-            initVerticle(PullRequestVerticle::class.java.name)
+            initVerticle(PullRequestVerticle::class.java.name),
+            initVerticle(UpdateChangelogVerticle::class.java.name)
         )).setHandler(reporter(future) {
             logger.info("All verticles deployed")
         })

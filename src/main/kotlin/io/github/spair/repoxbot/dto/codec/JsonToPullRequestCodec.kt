@@ -32,8 +32,9 @@ class JsonToPullRequestCodec : LocalMessageCodec<JsonObject, PullRequest>() {
 
     private fun getAction(json: JsonObject): PullRequestAction {
         return valueOfIgnoreCase(json.getString(ACTION), PullRequestAction.UNDEFINED).also {
-            if (it == PullRequestAction.CLOSED && json.getJsonObject(PULL_REQUEST).getBoolean(MERGED))
-                PullRequestAction.MERGED
+            if (it == PullRequestAction.CLOSED && json.getJsonObject(PULL_REQUEST).getBoolean(MERGED)) {
+                return PullRequestAction.MERGED
+            }
         }
     }
 
