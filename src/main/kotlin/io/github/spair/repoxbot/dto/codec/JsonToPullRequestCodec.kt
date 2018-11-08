@@ -12,8 +12,6 @@ class JsonToPullRequestCodec : LocalMessageCodec<JsonObject, PullRequest>() {
         const val NAME = "localJsonToPullRequestCodec"
     }
 
-    override fun name(): String = NAME
-
     override fun transform(json: JsonObject): PullRequest {
         val pullRequestObject = json.getJsonObject(PULL_REQUEST)
 
@@ -29,6 +27,8 @@ class JsonToPullRequestCodec : LocalMessageCodec<JsonObject, PullRequest>() {
 
         return PullRequest(action, author, number, title, link, diffLink, body, sender, touchedLabel)
     }
+
+    override fun name(): String = NAME
 
     private fun getAction(json: JsonObject): PullRequestAction {
         return valueOfIgnoreCase(json.getString(ACTION), PullRequestAction.UNDEFINED).also {

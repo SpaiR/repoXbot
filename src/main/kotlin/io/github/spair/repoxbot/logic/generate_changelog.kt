@@ -48,7 +48,7 @@ private fun getAuthor(changelogText: String, pullRequestAuthor: String): String 
         } else {
             it
         }
-    }
+    }.trim()
 }
 
 private fun String.ensureDotEnd(): String {

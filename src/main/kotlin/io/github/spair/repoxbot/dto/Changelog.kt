@@ -6,7 +6,6 @@ data class Changelog(
     val pullRequestNumber: Int,
     val entries: List<ChangelogEntry>
 ) {
-
     fun isEmpty(): Boolean = entries.isEmpty()
 
     inline fun <R> letIfNotEmpty(block: (Changelog) -> R) {

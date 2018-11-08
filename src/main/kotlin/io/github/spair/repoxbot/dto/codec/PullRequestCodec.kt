@@ -8,7 +8,7 @@ class PullRequestCodec : LocalMessageCodec<PullRequest, PullRequest>() {
         const val NAME = "localPullRequestCoded"
     }
 
-    override fun name(): String = NAME
-
     override fun transform(pullRequest: PullRequest): PullRequest = pullRequest
+
+    override fun name(): String = NAME
 }

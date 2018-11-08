@@ -1,16 +1,17 @@
 package io.github.spair.repoxbot.dto.codec
 
-import io.github.spair.repoxbot.dto.GitHubConfig
-import io.vertx.core.json.Json
+import io.github.spair.repoxbot.dto.GithubConfig
 import io.vertx.core.json.JsonObject
 
-class JsonToGitHubConfigCodec : LocalMessageCodec<JsonObject, GitHubConfig>() {
+class JsonToGithubConfigCodec : LocalMessageCodec<JsonObject, GithubConfig>() {
 
     companion object {
         const val NAME = "localJsonToGitHubConfigCodec"
     }
 
-    override fun transform(json: JsonObject?): GitHubConfig = Json.decodeValue(json.toString(), GitHubConfig::class.java)
+    override fun transform(json: JsonObject): GithubConfig {
+        return GithubConfig(json.getString(GithubConfig::changelogPath.name))
+    }
 
     override fun name(): String = NAME
 }

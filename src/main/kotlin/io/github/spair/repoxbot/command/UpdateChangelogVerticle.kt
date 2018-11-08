@@ -3,9 +3,9 @@ package io.github.spair.repoxbot.command
 import io.github.spair.repoxbot.constant.EB_COMMAND_CHANGELOG_UPDATE
 import io.github.spair.repoxbot.constant.EB_GITHUB_CONFIG_READ
 import io.github.spair.repoxbot.constant.EB_GITHUB_FILE_READ
-import io.github.spair.repoxbot.dto.GitHubConfig
+import io.github.spair.repoxbot.dto.GithubConfig
 import io.github.spair.repoxbot.dto.PullRequest
-import io.github.spair.repoxbot.logic.addChangelogToHtml
+import io.github.spair.repoxbot.logic.mergeChangelogWithHtml
 import io.github.spair.repoxbot.logic.generateChangelog
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.logging.LoggerFactory
@@ -18,18 +18,19 @@ class UpdateChangelogVerticle : AbstractVerticle() {
     override fun start() {
         eventBus.localConsumer<PullRequest>(EB_COMMAND_CHANGELOG_UPDATE) { msg ->
             generateChangelog(msg.body())?.letIfNotEmpty { changelog ->
-                eventBus.send<GitHubConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
+                eventBus.send<GithubConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
                     if (readConfigRes.succeeded()) {
-                        val changelogPath = readConfigRes.result().body().changelogPath
-                        eventBus.send<String>(EB_GITHUB_FILE_READ, changelogPath) { readFileRes ->
+                        val githubConfig = readConfigRes.result().body()
+                        eventBus.send<String>(EB_GITHUB_FILE_READ, githubConfig.changelogPath) { readFileRes ->
                             if (readFileRes.succeeded()) {
-                                val newChangelogHtml = addChangelogToHtml(readFileRes.result().body(), changelog)
+                                val newChangelogHtml = mergeChangelogWithHtml(changelog, readFileRes.result().body())
+                                println(newChangelogHtml)
                             } else {
                                 logger.error("Fail to read changelog file", readFileRes.cause())
                             }
                         }
                     } else {
-                        logger.error("Fail read config from github", readConfigRes.cause())
+                        logger.error("Fail to read config from github", readConfigRes.cause())
                     }
                 }
             }
