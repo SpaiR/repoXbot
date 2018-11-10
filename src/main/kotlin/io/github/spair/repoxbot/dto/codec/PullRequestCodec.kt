@@ -5,7 +5,7 @@ import io.github.spair.repoxbot.dto.PullRequest
 class PullRequestCodec : LocalMessageCodec<PullRequest, PullRequest>() {
 
     companion object {
-        const val NAME = "localPullRequestCoded"
+        const val NAME = "localPullRequestCodec"
     }
 
     override fun transform(pullRequest: PullRequest): PullRequest = pullRequest

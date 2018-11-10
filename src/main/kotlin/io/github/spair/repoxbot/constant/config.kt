@@ -12,7 +12,7 @@ const val CONFIG_PATH = "config_path"
 const val AGENT_NAME = "agent_name"
 
 const val DEFAULT_PORT = "8080"
-const val DEFAULT_ENTRY_POINT = "/handle"
+const val DEFAULT_ENTRY_POINT = "/repoxbot"
 const val DEFAULT_CHECK_SIGN = "true"
 const val DEFAULT_CONFIG_PATH = "/.changelog.config.json"
 const val DEFAULT_AGENT_NAME = "RepoXBot-Agent"

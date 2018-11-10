@@ -25,6 +25,7 @@ logs/
 .gradle/
 build/
 bin/
+out/
 
 # Project generated
 .vertx/

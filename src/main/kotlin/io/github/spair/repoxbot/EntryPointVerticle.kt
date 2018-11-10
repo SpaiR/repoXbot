@@ -1,6 +1,7 @@
 package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
+import com.fasterxml.jackson.core.JsonParseException
 import io.github.spair.repoxbot.dto.codec.JsonToPullRequestCodec
 import io.github.spair.repoxbot.logic.isCorrectSignature
 import io.github.spair.repoxbot.util.getSharedConfig
@@ -13,7 +14,6 @@ import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
-import com.fasterxml.jackson.core.JsonParseException
 import java.net.HttpURLConnection
 
 class EntryPointVerticle : AbstractVerticle() {

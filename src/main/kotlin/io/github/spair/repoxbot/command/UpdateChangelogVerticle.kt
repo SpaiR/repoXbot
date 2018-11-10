@@ -3,12 +3,17 @@ package io.github.spair.repoxbot.command
 import io.github.spair.repoxbot.constant.EB_COMMAND_CHANGELOG_UPDATE
 import io.github.spair.repoxbot.constant.EB_GITHUB_CONFIG_READ
 import io.github.spair.repoxbot.constant.EB_GITHUB_FILE_READ
-import io.github.spair.repoxbot.dto.GithubConfig
+import io.github.spair.repoxbot.constant.EB_GITHUB_FILE_UPDATE
+import io.github.spair.repoxbot.dto.Changelog
 import io.github.spair.repoxbot.dto.PullRequest
-import io.github.spair.repoxbot.logic.mergeChangelogWithHtml
+import io.github.spair.repoxbot.dto.RemoteConfig
+import io.github.spair.repoxbot.dto.UpdateFileInfo
 import io.github.spair.repoxbot.logic.generateChangelog
+import io.github.spair.repoxbot.logic.mergeChangelogWithHtml
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.logging.LoggerFactory
+
+private const val PR_NUM = "{prNum}"
 
 class UpdateChangelogVerticle : AbstractVerticle() {
 
@@ -18,13 +23,15 @@ class UpdateChangelogVerticle : AbstractVerticle() {
     override fun start() {
         eventBus.localConsumer<PullRequest>(EB_COMMAND_CHANGELOG_UPDATE) { msg ->
             generateChangelog(msg.body())?.letIfNotEmpty { changelog ->
-                eventBus.send<GithubConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
+                eventBus.send<RemoteConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
                     if (readConfigRes.succeeded()) {
-                        val githubConfig = readConfigRes.result().body()
-                        eventBus.send<String>(EB_GITHUB_FILE_READ, githubConfig.changelogPath) { readFileRes ->
+                        val remoteConfig = readConfigRes.result().body()
+                        val changelogPath = remoteConfig.changelogPath
+                        eventBus.send<String>(EB_GITHUB_FILE_READ, changelogPath) { readFileRes ->
                             if (readFileRes.succeeded()) {
+                                val updateMessage = getUpdateMessage(remoteConfig, changelog)
                                 val newChangelogHtml = mergeChangelogWithHtml(changelog, readFileRes.result().body())
-                                println(newChangelogHtml)
+                                eventBus.send(EB_GITHUB_FILE_UPDATE, UpdateFileInfo(changelogPath, updateMessage, newChangelogHtml))
                             } else {
                                 logger.error("Fail to read changelog file", readFileRes.cause())
                             }
@@ -35,5 +42,9 @@ class UpdateChangelogVerticle : AbstractVerticle() {
                 }
             }
         }
+    }
+
+    private fun getUpdateMessage(remoteConfig: RemoteConfig, changelog: Changelog): String {
+        return remoteConfig.updateMessage.replace(PR_NUM, changelog.pullRequestNumber.toString())
     }
 }

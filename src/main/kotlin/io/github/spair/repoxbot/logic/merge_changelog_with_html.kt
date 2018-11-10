@@ -76,4 +76,4 @@ private fun getAuthorElement(el: Element, author: String): Element? {
 
 private fun String.linkify() = replace("\\[link:(.*)]".toRegex(), READ_MORE_TEMPLATE)
 
-private fun String.trimEnds(): String = this.apply { reader().forEachLine { line -> line.trimEnd() } }
+private fun String.trimEnds(): String = buildString { reader().forEachLine { append(it.trimEnd()).append("\n") } }
