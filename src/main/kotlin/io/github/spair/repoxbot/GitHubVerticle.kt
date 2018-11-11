@@ -11,12 +11,10 @@ import io.vertx.core.Handler
 import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.core.eventbus.Message
 import io.vertx.core.eventbus.ReplyFailure
+import io.vertx.core.http.HttpClientRequest
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
-import io.vertx.ext.web.client.HttpRequest
-import io.vertx.ext.web.client.WebClient
-import io.vertx.ext.web.client.WebClientOptions
 import java.net.HttpURLConnection
 import java.util.Base64
 
@@ -24,11 +22,7 @@ class GithubVerticle : AbstractVerticle() {
 
     private val logger = LoggerFactory.getLogger(GithubVerticle::class.java)
     private val eventBus by lazy { vertx.eventBus() }
-    private val webClient by lazy {
-        WebClient.create(vertx, WebClientOptions().apply {
-            userAgent = getSharedConfig(AGENT_NAME)
-        })
-    }
+    private val httpClient by lazy { vertx.createHttpClient() }
 
     override fun start() {
         eventBus.localConsumer<JsonObject>(EB_GITHUB_CONFIG_READ, readRemoteConfig())
@@ -37,43 +31,43 @@ class GithubVerticle : AbstractVerticle() {
     }
 
     private fun readRemoteConfig() = Handler<Message<JsonObject>> { msg ->
-        webClient.getAbs(contents(getSharedConfig(CONFIG_PATH))).authHeader().send { resp ->
-            with(resp.result()) {
-                if (statusCode() == HttpURLConnection.HTTP_OK) {
-                    msg.reply(bodyAsJsonObject().readContents(), DeliveryOptions().setCodecName(StringJsonToRemoteConfigCodec.NAME))
-                } else {
-                    msg.reply(RemoteConfig())
+        httpClient.getAbs(contents(getSharedConfig(CONFIG_PATH))).authHeader().handler {
+            if (it.statusCode() == HttpURLConnection.HTTP_OK) {
+                it.bodyHandler { body ->
+                    msg.reply(body.toJsonObject().readContents(), DeliveryOptions().setCodecName(StringJsonToRemoteConfigCodec.NAME))
                 }
+            } else {
+                msg.reply(RemoteConfig())
             }
-        }
+        }.end()
     }
 
     private fun readGithubFile() = Handler<Message<String>> { msg ->
-        webClient.getAbs(contents(msg.body())).authHeader().send { resp ->
-            with(resp.result()) {
-                if (statusCode() == HttpURLConnection.HTTP_OK) {
-                    msg.reply(resp.result().bodyAsJsonObject().readContents())
-                } else {
-                    logger.error("Unable to handle default changelog file path (html/changelog.html)")
-                    msg.fail(ReplyFailure.RECIPIENT_FAILURE.toInt(), "no changelog file")
+        httpClient.getAbs(contents(msg.body())).authHeader().handler {
+            if (it.statusCode() == HttpURLConnection.HTTP_OK) {
+                it.bodyHandler { body ->
+                    msg.reply(body.toJsonObject().readContents())
                 }
+            } else {
+                logger.error("Unable to handle default changelog file path (html/changelog.html)")
+                msg.fail(ReplyFailure.RECIPIENT_FAILURE.toInt(), "no changelog file")
             }
-        }
+        }.end()
     }
 
     private fun updateGithubFile() = Handler<Message<UpdateFileInfo>> { msg ->
         val updateFileInfo = msg.body()
         getFileSha(updateFileInfo.path).setHandler { ar ->
             if (ar.succeeded()) {
-                webClient.putAbs(contents(updateFileInfo.path)).authHeader().sendJsonObject(JsonObject().apply {
+                httpClient.putAbs(contents(updateFileInfo.path)).authHeader().jsonHeader().handler {
+                    if (it.statusCode() != HttpURLConnection.HTTP_OK) {
+                        logger.error("Unable to update Github file: ${updateFileInfo.path}")
+                    }
+                }.end(JsonObject().apply {
                     put(MESSAGE, updateFileInfo.message)
                     put(CONTENT, updateFileInfo.content.encodeBase64())
                     put(SHA, ar.result())
-                }) {
-                    if ((it.succeeded() && it.result().statusCode() != HttpURLConnection.HTTP_OK) || it.failed()) {
-                        logger.error("Unable to update Github file: ${updateFileInfo.path}", it.cause())
-                    }
-                }
+                }.toBuffer())
             } else {
                 logger.error("Error while updating github file", ar.cause())
             }
@@ -89,26 +83,33 @@ class GithubVerticle : AbstractVerticle() {
                 dirPath = group(1)
                 fileName = group(2)
             } else {
-                dirPath = "/"
+                dirPath = ""
                 fileName = path
             }
         }
 
         return Future.future<String>().apply {
-            webClient.getAbs(contents(dirPath)).authHeader().send { resp ->
-                for (node in resp.result().bodyAsJsonArray()) {
-                    if (node is JsonObject && node.getString(NAME) == fileName) {
-                        complete(node.getString(SHA))
-                        return@send
+            httpClient.getAbs(contents(dirPath)).authHeader().handler {
+                it.bodyHandler { body ->
+                    for (node in body.toJsonArray()) {
+                        if (node is JsonObject && node.getString(NAME) == fileName) {
+                            complete(node.getString(SHA))
+                            return@bodyHandler
+                        }
                     }
+                    fail(IllegalArgumentException("Can't get file SHA from path: $path"))
                 }
-                fail(IllegalArgumentException("Can't get file SHA from path: $path"))
-            }
+            }.end()
         }
     }
 
-    private fun <T> HttpRequest<T>.authHeader(): HttpRequest<T> = apply {
-        headers().add(HttpHeaders.AUTHORIZATION, "token ${getSharedConfig(GITHUB_TOKEN)}")
+    private fun HttpClientRequest.authHeader(): HttpClientRequest = apply {
+        putHeader(HttpHeaders.AUTHORIZATION, "token ${getSharedConfig(GITHUB_TOKEN)}")
+        putHeader(HttpHeaders.USER_AGENT, getSharedConfig(AGENT_NAME))
+    }
+
+    private fun HttpClientRequest.jsonHeader(): HttpClientRequest = apply {
+        putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
     }
 }
 

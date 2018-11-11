@@ -32,10 +32,7 @@ mainClassName = 'io.vertx.core.Launcher'
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-
     implementation "io.vertx:vertx-core:$vertxVersion"
-    implementation "io.vertx:vertx-web-client:$vertxVersion"
-
     implementation "org.jsoup:jsoup:$jsoupVersion"
 
     ktlint "com.github.shyiko:ktlint:$ktlintVersion"
