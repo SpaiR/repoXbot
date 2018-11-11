@@ -32,10 +32,10 @@ mainClassName = 'io.vertx.core.Launcher'
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-    
+
     implementation "io.vertx:vertx-core:$vertxVersion"
     implementation "io.vertx:vertx-web-client:$vertxVersion"
-    
+
     implementation "org.jsoup:jsoup:$jsoupVersion"
 
     ktlint "com.github.shyiko:ktlint:$ktlintVersion"
@@ -62,7 +62,7 @@ shadowJar {
 task cleanProject(type: Delete, group: 'build') {
     description = 'Deletes the build directory and project generated files.'
     dependsOn clean
-    delete "${projectDir}/.vertx", "${projectDir}/logs"
+    delete "$projectDir/.vertx", "$projectDir/logs", "$projectDir/out"
 }
 
 task ktlint(type: JavaExec, group: 'verification') {
