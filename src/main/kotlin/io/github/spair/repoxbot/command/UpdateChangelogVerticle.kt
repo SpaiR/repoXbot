@@ -13,8 +13,6 @@ import io.github.spair.repoxbot.logic.mergeChangelogWithHtml
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.logging.LoggerFactory
 
-private const val PR_NUM = "{prNum}"
-
 class UpdateChangelogVerticle : AbstractVerticle() {
 
     private val logger = LoggerFactory.getLogger(UpdateChangelogVerticle::class.java)
@@ -45,6 +43,6 @@ class UpdateChangelogVerticle : AbstractVerticle() {
     }
 
     private fun getUpdateMessage(remoteConfig: RemoteConfig, changelog: Changelog): String {
-        return remoteConfig.updateMessage.replace(PR_NUM, changelog.pullRequestNumber.toString())
+        return remoteConfig.updateMessage.replace("{prNum}", changelog.pullRequestNumber.toString())
     }
 }

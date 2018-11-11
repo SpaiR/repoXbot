@@ -51,7 +51,10 @@ shadowJar {
     classifier = 'fat'
 
     manifest {
-        attributes 'Main-Verticle': 'io.github.spair.repoxbot.MainVerticle'
+        attributes(
+            'Main-Verticle': 'io.github.spair.repoxbot.MainVerticle',
+            'Build-Version': version
+        )
     }
 
     mergeServiceFiles {
