@@ -1,6 +1,7 @@
 package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
+import io.github.spair.repoxbot.dto.RemoteConfig
 import io.github.spair.repoxbot.dto.UpdateFileInfo
 import io.github.spair.repoxbot.dto.codec.StringJsonToRemoteConfigCodec
 import io.github.spair.repoxbot.util.getSharedConfig
@@ -9,6 +10,7 @@ import io.vertx.core.Future
 import io.vertx.core.Handler
 import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.core.eventbus.Message
+import io.vertx.core.eventbus.ReplyFailure
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
@@ -36,14 +38,27 @@ class GithubVerticle : AbstractVerticle() {
 
     private fun readRemoteConfig() = Handler<Message<JsonObject>> { msg ->
         webClient.getAbs(contents(getSharedConfig(CONFIG_PATH))).authHeader().send { resp ->
-            with(resp.result().bodyAsJsonObject()) {
-                msg.reply(readContents(), DeliveryOptions().setCodecName(StringJsonToRemoteConfigCodec.NAME))
+            with(resp.result()) {
+                if (statusCode() == HttpURLConnection.HTTP_OK) {
+                    msg.reply(bodyAsJsonObject().readContents(), DeliveryOptions().setCodecName(StringJsonToRemoteConfigCodec.NAME))
+                } else {
+                    msg.reply(RemoteConfig())
+                }
             }
         }
     }
 
     private fun readGithubFile() = Handler<Message<String>> { msg ->
-        webClient.getAbs(contents(msg.body())).authHeader().send { resp -> msg.reply(resp.result().bodyAsJsonObject().readContents()) }
+        webClient.getAbs(contents(msg.body())).authHeader().send { resp ->
+            with(resp.result()) {
+                if (statusCode() == HttpURLConnection.HTTP_OK) {
+                    msg.reply(resp.result().bodyAsJsonObject().readContents())
+                } else {
+                    logger.error("Unable to handle default changelog file path (html/changelog.html)")
+                    msg.fail(ReplyFailure.RECIPIENT_FAILURE.toInt(), "no changelog file")
+                }
+            }
+        }
     }
 
     private fun updateGithubFile() = Handler<Message<UpdateFileInfo>> { msg ->

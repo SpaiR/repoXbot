@@ -1,13 +1,11 @@
 package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
+import io.github.spair.repoxbot.dto.codec.* // ktlint-disable
 import io.github.spair.repoxbot.command.UpdateChangelogVerticle
 import io.github.spair.repoxbot.dto.PullRequest
+import io.github.spair.repoxbot.dto.RemoteConfig
 import io.github.spair.repoxbot.dto.UpdateFileInfo
-import io.github.spair.repoxbot.dto.codec.JsonToPullRequestCodec
-import io.github.spair.repoxbot.dto.codec.PullRequestCodec
-import io.github.spair.repoxbot.dto.codec.StringJsonToRemoteConfigCodec
-import io.github.spair.repoxbot.dto.codec.UpdateFileInfoCodec
 import io.github.spair.repoxbot.util.reporter
 import io.github.spair.repoxbot.util.sharedConfig
 import io.vertx.core.AbstractVerticle
@@ -60,8 +58,11 @@ class MainVerticle : AbstractVerticle() {
         with(vertx.eventBus()) {
             registerDefaultCodec(UpdateFileInfo::class.java, UpdateFileInfoCodec())
             registerDefaultCodec(PullRequest::class.java, PullRequestCodec())
+            registerDefaultCodec(RemoteConfig::class.java, RemoteConfigCodec())
+
             registerCodec(JsonToPullRequestCodec())
             registerCodec(StringJsonToRemoteConfigCodec())
+
             logger.info("Event bus codecs registered")
         }
     }
