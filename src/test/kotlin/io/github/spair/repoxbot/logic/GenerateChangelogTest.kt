@@ -63,6 +63,17 @@ internal class `Test changelog generation from pull request` {
         assertEquals(expected, generateChangelog(createPullRequest(body)))
     }
 
+    @Test
+    fun `When has link`() {
+        val expected = Changelog(AUTHOR_NAME, PR_LINK, PR_NUM, listOf(ChangelogEntry("rscadd", "Test entry! [link:$PR_LINK]")))
+        val body = """
+            body
+            :cl:
+            * rscadd[link]: test entry!
+        """.trimIndent()
+        assertEquals(expected, generateChangelog(createPullRequest(body)))
+    }
+
     private fun createPullRequest(body: String): PullRequest = PullRequest(
         PullRequestAction.MERGED, AUTHOR_NAME, PR_NUM, "Title",
         PR_LINK, "Diff Link", body, "Sender", "Touched label"
