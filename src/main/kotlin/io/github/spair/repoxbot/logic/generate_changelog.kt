@@ -5,7 +5,7 @@ import io.github.spair.repoxbot.dto.ChangelogEntry
 import io.github.spair.repoxbot.dto.PullRequest
 
 private val clText = ":cl:((?:.|\\n|\\r)*+)|\uD83C\uDD91((?:.|\\n|\\r)*+)".toRegex()
-private val clRowWithClass = "-[ ](\\w+)(\\[link])?:[ ](.+)".toRegex()
+private val clRowWithClass = "[-*][ ](\\w+)(\\[link])?:[ ](.+)".toRegex()
 
 fun generateChangelog(pullRequest: PullRequest): Changelog? {
     return findChangelogText(pullRequest.body)?.let { parseChangelog(it, pullRequest) }
