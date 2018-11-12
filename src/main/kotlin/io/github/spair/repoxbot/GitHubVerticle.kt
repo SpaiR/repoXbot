@@ -49,8 +49,8 @@ class GithubVerticle : AbstractVerticle() {
                     msg.reply(body.toJsonObject().readContents())
                 }
             } else {
-                logger.error("Unable to handle default changelog file path (html/changelog.html)")
-                msg.fail(ReplyFailure.RECIPIENT_FAILURE.toInt(), "no changelog file")
+                logger.error("Unable to read Github file: ${msg.body()}")
+                msg.fail(ReplyFailure.RECIPIENT_FAILURE.toInt(), "no file exist")
             }
         }.end()
     }

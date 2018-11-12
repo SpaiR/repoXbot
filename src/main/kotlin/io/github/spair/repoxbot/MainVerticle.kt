@@ -71,7 +71,7 @@ class MainVerticle : AbstractVerticle() {
         CompositeFuture.all(listOf(
             initVerticle(EntryPointVerticle::class.java.name),
             initVerticle(GithubVerticle::class.java.name),
-            initVerticle(PullRequestVerticle::class.java.name),
+            initVerticle(DistributionVerticle::class.java.name),
             initVerticle(UpdateChangelogVerticle::class.java.name)
         )).setHandler(reporter(future) {
             logger.info("All verticles deployed")
