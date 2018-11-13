@@ -4,7 +4,6 @@ import io.github.spair.repoxbot.constant.EB_COMMAND_CHANGELOG_UPDATE
 import io.github.spair.repoxbot.constant.EB_GITHUB_CONFIG_READ
 import io.github.spair.repoxbot.constant.EB_GITHUB_FILE_READ
 import io.github.spair.repoxbot.constant.EB_GITHUB_FILE_UPDATE
-import io.github.spair.repoxbot.dto.Changelog
 import io.github.spair.repoxbot.dto.PullRequest
 import io.github.spair.repoxbot.dto.RemoteConfig
 import io.github.spair.repoxbot.dto.UpdateFileInfo
@@ -24,10 +23,10 @@ class UpdateChangelogVerticle : AbstractVerticle() {
                 eventBus.send<RemoteConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
                     if (readConfigRes.succeeded()) {
                         val remoteConfig = readConfigRes.result().body()
-                        val changelogPath = remoteConfig.changelogPath
+                        val changelogPath = remoteConfig.path
                         eventBus.send<String>(EB_GITHUB_FILE_READ, changelogPath) { readFileRes ->
                             if (readFileRes.succeeded()) {
-                                val updateMessage = getUpdateMessage(remoteConfig, changelog)
+                                val updateMessage = "Automatic changelog generation for PR #${changelog.pullRequestNumber}"
                                 val newChangelogHtml = mergeChangelogWithHtml(changelog, readFileRes.result().body())
                                 eventBus.send(EB_GITHUB_FILE_UPDATE, UpdateFileInfo(changelogPath, updateMessage, newChangelogHtml))
                             } else {
@@ -40,9 +39,5 @@ class UpdateChangelogVerticle : AbstractVerticle() {
                 }
             }
         }
-    }
-
-    private fun getUpdateMessage(remoteConfig: RemoteConfig, changelog: Changelog): String {
-        return remoteConfig.updateMessage.replace("{prNum}", changelog.pullRequestNumber.toString())
     }
 }
