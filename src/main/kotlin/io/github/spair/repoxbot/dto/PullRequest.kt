@@ -13,5 +13,5 @@ data class PullRequest(
 )
 
 enum class PullRequestAction {
-    CLOSED, MERGED, UNDEFINED
+    OPENED, CLOSED, MERGED, UNDEFINED
 }

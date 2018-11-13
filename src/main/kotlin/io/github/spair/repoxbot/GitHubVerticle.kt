@@ -1,8 +1,12 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
+import io.github.spair.repoxbot.dto.IssueComment
 import io.github.spair.repoxbot.dto.RemoteConfig
 import io.github.spair.repoxbot.dto.UpdateFileInfo
+import io.github.spair.repoxbot.dto.codec.IssueCommentListCodec
 import io.github.spair.repoxbot.dto.codec.StringJsonToRemoteConfigCodec
 import io.github.spair.repoxbot.util.getSharedConfig
 import io.vertx.core.AbstractVerticle
@@ -26,8 +30,11 @@ class GithubVerticle : AbstractVerticle() {
 
     override fun start() {
         eventBus.localConsumer<JsonObject>(EB_GITHUB_CONFIG_READ, readRemoteConfig())
+
         eventBus.localConsumer<String>(EB_GITHUB_FILE_READ, readGithubFile())
         eventBus.localConsumer<UpdateFileInfo>(EB_GITHUB_FILE_UPDATE, updateGithubFile())
+
+        eventBus.localConsumer<Int>(EB_GITHUB_ISSUE_LIST, listIssueComments())
     }
 
     private fun readRemoteConfig() = Handler<Message<JsonObject>> { msg ->
@@ -74,6 +81,15 @@ class GithubVerticle : AbstractVerticle() {
         }
     }
 
+    private fun listIssueComments() = Handler<Message<Int>> { msg ->
+        val issueComments = mutableListOf<IssueComment>()
+        recursiveLinkProcess(issueComments(msg.body())) {
+            issueComments.add(IssueComment(it.getInteger(ID), it.getJsonObject(USER).getString(LOGIN), it.getString(BODY)))
+        }.setHandler {
+            msg.reply(issueComments.toList(), DeliveryOptions().setCodecName(IssueCommentListCodec.NAME))
+        }
+    }
+
     private fun getFileSha(path: String): Future<String> {
         var dirPath: String
         var fileName: String
@@ -103,6 +119,32 @@ class GithubVerticle : AbstractVerticle() {
         }
     }
 
+    private fun recursiveLinkProcess(link: String, action: (JsonObject) -> Unit): Future<Unit> {
+        val nextLinkReg = "<([\\w\\d/?=:.]*)>;[ ]rel=\"next\"".toRegex()
+        val future = Future.future<Unit>()
+
+        fun process(linkToProcess: String) {
+            httpClient.getAbs(linkToProcess).authHeader().handler { resp ->
+                resp.bodyHandler { body ->
+                    body.toJsonArray().forEach { node -> if (node is JsonObject) action(node) }
+                    val headers = resp.headers()
+                    if (headers.contains("link")) {
+                        val nextLink = nextLinkReg.toPattern().matcher(headers["link"])
+                        if (nextLink.find()) {
+                            process(nextLink.group(1))
+                        } else {
+                            future.complete()
+                        }
+                    } else {
+                        future.complete()
+                    }
+                }
+            }.end()
+        }
+        process(link)
+        return future
+    }
+
     private fun HttpClientRequest.authHeader(): HttpClientRequest = apply {
         putHeader(HttpHeaders.AUTHORIZATION, "token ${getSharedConfig(GITHUB_TOKEN)}")
         putHeader(HttpHeaders.USER_AGENT, getSharedConfig(AGENT_NAME))
@@ -118,7 +160,10 @@ private fun JsonObject.readContents(): String = getString(CONTENT).decodeBase64(
 private fun String.decodeBase64(): String = Base64.getMimeDecoder().decode(this).toString(Charsets.UTF_8)
 private fun String.encodeBase64(): String = Base64.getEncoder().encodeToString(toByteArray())
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun GithubVerticle.contents(relPath: String): String {
+private inline fun GithubVerticle.contents(relPath: String): String {
     return "$GITHUB_API_URL/repos/${getSharedConfig(GITHUB_ORG)}/${getSharedConfig(GITHUB_REPO)}/contents/$relPath"
+}
+
+private inline fun GithubVerticle.issueComments(issueNum: Int): String {
+    return "$GITHUB_API_URL/repos/${getSharedConfig(GITHUB_ORG)}/${getSharedConfig(GITHUB_REPO)}/issues/$issueNum/comments"
 }
