@@ -6,6 +6,7 @@ import io.github.spair.repoxbot.command.UpdateChangelogVerticle
 import io.github.spair.repoxbot.command.ValidateChangelogVerticle
 import io.github.spair.repoxbot.dto.PullRequest
 import io.github.spair.repoxbot.dto.RemoteConfig
+import io.github.spair.repoxbot.dto.UpdateCommentInfo
 import io.github.spair.repoxbot.dto.UpdateFileInfo
 import io.github.spair.repoxbot.util.reporter
 import io.github.spair.repoxbot.util.sharedConfig
@@ -60,6 +61,7 @@ class MainVerticle : AbstractVerticle() {
             registerDefaultCodec(UpdateFileInfo::class.java, UpdateFileInfoCodec())
             registerDefaultCodec(PullRequest::class.java, PullRequestCodec())
             registerDefaultCodec(RemoteConfig::class.java, RemoteConfigCodec())
+            registerDefaultCodec(UpdateCommentInfo::class.java, UpdateCommentInfoCodec())
 
             registerCodec(JsonToPullRequestCodec())
             registerCodec(StringJsonToRemoteConfigCodec())

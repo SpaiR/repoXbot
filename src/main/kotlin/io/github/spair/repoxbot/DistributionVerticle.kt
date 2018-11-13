@@ -21,7 +21,7 @@ class DistributionVerticle : AbstractVerticle() {
         println("Pull request consumed: ${msg.body()}") // TODO: remove
         val pullRequest = msg.body()
         when (pullRequest.action) {
-            PullRequestAction.OPENED -> eventBus.send(EB_COMMAND_CHANGELOG_VALIDATE, pullRequest)
+            PullRequestAction.OPENED, PullRequestAction.EDITED -> eventBus.send(EB_COMMAND_CHANGELOG_VALIDATE, pullRequest)
             PullRequestAction.MERGED -> eventBus.send(EB_COMMAND_CHANGELOG_UPDATE, pullRequest)
             PullRequestAction.CLOSED, PullRequestAction.UNDEFINED -> {}
         }

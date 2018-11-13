@@ -13,4 +13,6 @@ const val EB_GITHUB_CONFIG_READ = "eb.github.config.read"
 const val EB_GITHUB_FILE_READ = "eb.github.file.read"
 const val EB_GITHUB_FILE_UPDATE = "eb.github.file.update"
 
-const val EB_GITHUB_ISSUE_LIST = "eb.github.issue.list"
+const val EB_GITHUB_ISSUE_COMMENT_LIST = "eb.github.issue.comment.list"
+const val EB_GITHUB_ISSUE_COMMENT_CREATE = "eb.github.issue.comment.create"
+const val EB_GITHUB_ISSUE_COMMENT_UPDATE = "eb/github.issue.comment.update"

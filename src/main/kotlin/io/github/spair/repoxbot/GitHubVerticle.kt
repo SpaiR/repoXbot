@@ -5,6 +5,7 @@ package io.github.spair.repoxbot
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
 import io.github.spair.repoxbot.dto.IssueComment
 import io.github.spair.repoxbot.dto.RemoteConfig
+import io.github.spair.repoxbot.dto.UpdateCommentInfo
 import io.github.spair.repoxbot.dto.UpdateFileInfo
 import io.github.spair.repoxbot.dto.codec.IssueCommentListCodec
 import io.github.spair.repoxbot.dto.codec.StringJsonToRemoteConfigCodec
@@ -17,6 +18,7 @@ import io.vertx.core.eventbus.Message
 import io.vertx.core.eventbus.ReplyFailure
 import io.vertx.core.http.HttpClientRequest
 import io.vertx.core.http.HttpHeaders
+import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
 import java.net.HttpURLConnection
@@ -34,7 +36,9 @@ class GithubVerticle : AbstractVerticle() {
         eventBus.localConsumer<String>(EB_GITHUB_FILE_READ, readGithubFile())
         eventBus.localConsumer<UpdateFileInfo>(EB_GITHUB_FILE_UPDATE, updateGithubFile())
 
-        eventBus.localConsumer<Int>(EB_GITHUB_ISSUE_LIST, listIssueComments())
+        eventBus.localConsumer<Int>(EB_GITHUB_ISSUE_COMMENT_LIST, listIssueComments())
+        eventBus.localConsumer<UpdateCommentInfo>(EB_GITHUB_ISSUE_COMMENT_CREATE, createIssueComment())
+        eventBus.localConsumer<UpdateCommentInfo>(EB_GITHUB_ISSUE_COMMENT_UPDATE, updateIssueComment())
     }
 
     private fun readRemoteConfig() = Handler<Message<JsonObject>> { msg ->
@@ -88,6 +92,28 @@ class GithubVerticle : AbstractVerticle() {
         }.setHandler {
             msg.reply(issueComments.toList(), DeliveryOptions().setCodecName(IssueCommentListCodec.NAME))
         }
+    }
+
+    private fun createIssueComment() = Handler<Message<UpdateCommentInfo>> { msg ->
+        val updateCommentInfo = msg.body()
+        httpClient.postAbs(issueComments(updateCommentInfo.id)).authHeader().jsonHeader().handler {
+            if (it.statusCode() != HttpURLConnection.HTTP_CREATED) {
+                logger.error("Unable to create comment for issue: ${updateCommentInfo.id}")
+            }
+        }.end(JsonObject().apply {
+            put(BODY, updateCommentInfo.text)
+        }.toBuffer())
+    }
+
+    private fun updateIssueComment() = Handler<Message<UpdateCommentInfo>> { msg ->
+        val updateCommentInfo = msg.body()
+        httpClient.requestAbs(HttpMethod.PATCH, issueComment(updateCommentInfo.id)).authHeader().jsonHeader().handler {
+            if (it.statusCode() != HttpURLConnection.HTTP_OK) {
+                logger.error("Unable to update comment with id: ${updateCommentInfo.id}")
+            }
+        }.end(JsonObject().apply {
+            put(BODY, updateCommentInfo.text)
+        }.toBuffer())
     }
 
     private fun getFileSha(path: String): Future<String> {
@@ -166,4 +192,8 @@ private inline fun GithubVerticle.contents(relPath: String): String {
 
 private inline fun GithubVerticle.issueComments(issueNum: Int): String {
     return "$GITHUB_API_URL/repos/${getSharedConfig(GITHUB_ORG)}/${getSharedConfig(GITHUB_REPO)}/issues/$issueNum/comments"
+}
+
+private inline fun GithubVerticle.issueComment(commentId: Int): String {
+    return "$GITHUB_API_URL/repos/${getSharedConfig(GITHUB_ORG)}/${getSharedConfig(GITHUB_REPO)}/issues/comments/$commentId"
 }
