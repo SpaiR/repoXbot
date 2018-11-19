@@ -1,7 +1,7 @@
 package io.github.spair.repoxbot.command
 
-import io.github.spair.repoxbot.constant.*  //ktlint-disable
-import io.github.spair.repoxbot.dto.*   // ktlint-disable
+import io.github.spair.repoxbot.constant.*  // ktlint-disable
+import io.github.spair.repoxbot.dto.*       // ktlint-disable
 import io.github.spair.repoxbot.logic.generateChangelog
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.logging.LoggerFactory

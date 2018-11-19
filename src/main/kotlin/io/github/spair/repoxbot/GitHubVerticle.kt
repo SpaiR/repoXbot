@@ -70,6 +70,7 @@ class GithubVerticle : AbstractVerticle() {
         val updateFileInfo = msg.body()
         getFileSha(updateFileInfo.path).setHandler { ar ->
             if (ar.succeeded()) {
+                val fileSha = ar.result()
                 httpClient.putAbs(contents(updateFileInfo.path)).authHeader().jsonHeader().handler {
                     if (it.statusCode() != HttpURLConnection.HTTP_OK) {
                         logger.error("Unable to update Github file: ${updateFileInfo.path}")
@@ -77,7 +78,7 @@ class GithubVerticle : AbstractVerticle() {
                 }.end(JsonObject().apply {
                     put(MESSAGE, updateFileInfo.message)
                     put(CONTENT, updateFileInfo.content.encodeBase64())
-                    put(SHA, ar.result())
+                    put(SHA, fileSha)
                 }.toBuffer())
             } else {
                 logger.error("Error while updating github file", ar.cause())

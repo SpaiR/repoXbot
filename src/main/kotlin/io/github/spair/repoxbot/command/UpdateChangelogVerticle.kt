@@ -25,8 +25,8 @@ class UpdateChangelogVerticle : AbstractVerticle() {
                     val changelogPath = config.changelogPath
                     eventBus.send<String>(EB_GITHUB_FILE_READ, changelogPath) { readFileRes ->
                         if (readFileRes.succeeded()) {
-                            val updateMessage = "Automatic changelog generation for PR #${changelog.pullRequestNumber}"
                             val newChangelogHtml = mergeChangelogWithHtml(changelog, readFileRes.result().body())
+                            val updateMessage = "Automatic changelog generation for PR #${changelog.pullRequestNumber}"
                             eventBus.send(EB_GITHUB_FILE_UPDATE, UpdateFileInfo(changelogPath, updateMessage, newChangelogHtml))
                         } else {
                             logger.error("Fail to read changelog file", readFileRes.cause())

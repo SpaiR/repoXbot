@@ -73,8 +73,10 @@ class MainVerticle : AbstractVerticle() {
     private fun deployVerticles(future: Future<Void>) {
         CompositeFuture.all(listOf(
             initVerticle(EntryPointVerticle::class.java.name),
+
             initVerticle(GithubVerticle::class.java.name),
             initVerticle(DistributionVerticle::class.java.name),
+
             initVerticle(UpdateChangelogVerticle::class.java.name),
             initVerticle(ValidateChangelogVerticle::class.java.name),
             initVerticle(LabelPullRequestVerticle::class.java.name)

@@ -16,7 +16,7 @@ private fun toHextString(bytes: ByteArray): String {
     return buildString {
         bytes.forEach {
             val octet = it.toInt()
-            val firstIndex = (octet and 0xF0) ushr (4)
+            val firstIndex = (octet and 0xF0) ushr 4
             val secondIndex = octet and 0x0F
             append(hexArray[firstIndex])
             append(hexArray[secondIndex])
