@@ -2,6 +2,7 @@ package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
 import com.fasterxml.jackson.core.JsonParseException
+import io.github.spair.repoxbot.dto.codec.JsonToIssueCodec
 import io.github.spair.repoxbot.dto.codec.JsonToPullRequestCodec
 import io.github.spair.repoxbot.logic.isCorrectSignature
 import io.github.spair.repoxbot.util.getSharedConfig
@@ -80,6 +81,10 @@ class EntryPointVerticle : AbstractVerticle() {
             EVENT_PULL_REQUEST -> {
                 vertx.eventBus().send(EB_EVENT_PULLREQUEST, payload, JsonToPullRequestCodec.NAME)
                 "Pull request event caught. Async handling in process."
+            }
+            EVENT_ISSUES -> {
+                vertx.eventBus().send(EB_EVENT_ISSUES, payload, JsonToIssueCodec.NAME)
+                "Issue event caught. Async handling in process."
             }
             else -> "Unexpected event ($event) caught."
         }

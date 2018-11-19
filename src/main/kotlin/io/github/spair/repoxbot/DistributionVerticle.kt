@@ -1,9 +1,8 @@
 package io.github.spair.repoxbot
 
-import io.github.spair.repoxbot.constant.EB_COMMAND_CHANGELOG_UPDATE
-import io.github.spair.repoxbot.constant.EB_COMMAND_CHANGELOG_VALIDATE
-import io.github.spair.repoxbot.constant.EB_COMMAND_PULLREQUEST_LABEL
-import io.github.spair.repoxbot.constant.EB_EVENT_PULLREQUEST
+import io.github.spair.repoxbot.constant.*  // ktlint-disable
+import io.github.spair.repoxbot.dto.Issue
+import io.github.spair.repoxbot.dto.IssueAction
 import io.github.spair.repoxbot.dto.PullRequest
 import io.github.spair.repoxbot.dto.PullRequestAction
 import io.vertx.core.AbstractVerticle
@@ -16,6 +15,7 @@ class DistributionVerticle : AbstractVerticle() {
 
     override fun start() {
         eventBus.localConsumer<PullRequest>(EB_EVENT_PULLREQUEST, consumePullRequest())
+        eventBus.localConsumer<Issue>(EB_EVENT_ISSUES, consumeIssue())
     }
 
     private fun consumePullRequest() = Handler<Message<PullRequest>> { msg ->
@@ -29,6 +29,15 @@ class DistributionVerticle : AbstractVerticle() {
             PullRequestAction.EDITED -> eventBus.send(EB_COMMAND_CHANGELOG_VALIDATE, pullRequest)
             PullRequestAction.MERGED -> eventBus.send(EB_COMMAND_CHANGELOG_UPDATE, pullRequest)
             PullRequestAction.CLOSED, PullRequestAction.UNDEFINED -> {}
+        }
+    }
+
+    private fun consumeIssue() = Handler<Message<Issue>> { msg ->
+        println("Issue consumed: ${msg.body()}")    // TODO: remove
+        val issue = msg.body()
+        when (issue.action) {
+            IssueAction.OPENED -> eventBus.send(EB_COMMAND_ISSUE_LABEL, issue)
+            IssueAction.UNDEFINED -> {}
         }
     }
 }

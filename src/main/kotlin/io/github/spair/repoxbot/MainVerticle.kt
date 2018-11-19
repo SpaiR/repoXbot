@@ -6,6 +6,7 @@ import io.github.spair.repoxbot.dto.codec.* // ktlint-disable
 import io.github.spair.repoxbot.command.UpdateChangelogVerticle
 import io.github.spair.repoxbot.command.ValidateChangelogVerticle
 import io.github.spair.repoxbot.command.LabelPullRequestVerticle
+import io.github.spair.repoxbot.command.LabelIssueVerticle
 import io.github.spair.repoxbot.util.reporter
 import io.github.spair.repoxbot.util.sharedConfig
 import io.vertx.core.AbstractVerticle
@@ -58,6 +59,7 @@ class MainVerticle : AbstractVerticle() {
         with(vertx.eventBus()) {
             registerDefaultCodec(UpdateFileInfo::class.java, UpdateFileInfoCodec())
             registerDefaultCodec(PullRequest::class.java, PullRequestCodec())
+            registerDefaultCodec(Issue::class.java, IssueCodec())
             registerDefaultCodec(RepoXBotConfig::class.java, RepoXBotConfigCodec())
             registerDefaultCodec(UpdateCommentInfo::class.java, UpdateCommentInfoCodec())
             registerDefaultCodec(UpdateLabelInfo::class.java, UpdateLabelInfoCodec())
@@ -65,6 +67,7 @@ class MainVerticle : AbstractVerticle() {
             registerCodec(JsonToPullRequestCodec())
             registerCodec(StringJsonToRepoXBotConfigCodec())
             registerCodec(IssueCommentListCodec())
+            registerCodec(JsonToIssueCodec())
 
             logger.info("Event bus codecs registered")
         }
@@ -79,7 +82,8 @@ class MainVerticle : AbstractVerticle() {
 
             initVerticle(UpdateChangelogVerticle::class.java.name),
             initVerticle(ValidateChangelogVerticle::class.java.name),
-            initVerticle(LabelPullRequestVerticle::class.java.name)
+            initVerticle(LabelPullRequestVerticle::class.java.name),
+            initVerticle(LabelIssueVerticle::class.java.name)
         )).setHandler(reporter(future) {
             logger.info("All verticles deployed")
         })

@@ -2,11 +2,13 @@ package io.github.spair.repoxbot.constant
 
 // Event
 const val EB_EVENT_PULLREQUEST = "eb.event.pull_request"
+const val EB_EVENT_ISSUES = "eb.event.issues"
 
 // Command
 const val EB_COMMAND_CHANGELOG_UPDATE = "eb.command.changelog.update"
 const val EB_COMMAND_CHANGELOG_VALIDATE = "eb.command.changelog.validate"
 const val EB_COMMAND_PULLREQUEST_LABEL = "eb.command.pull_request.label"
+const val EB_COMMAND_ISSUE_LABEL = "eb.command.issue.label"
 
 // Github
 const val EB_GITHUB_CONFIG_READ = "eb.github.config.read"

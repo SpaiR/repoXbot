@@ -26,3 +26,8 @@ class PullRequestCodec : LocalMessageCodec<PullRequest, PullRequest>() {
     override fun transform(pullRequest: PullRequest): PullRequest = pullRequest
     override fun name(): String = this::class.java.name
 }
+
+class IssueCodec : LocalMessageCodec<Issue, Issue>() {
+    override fun transform(issue: Issue): Issue = issue
+    override fun name(): String = this::class.java.name
+}
