@@ -9,7 +9,6 @@ import io.github.spair.repoxbot.dto.IssueAction
 import io.github.spair.repoxbot.util.valueOfIgnoreCase
 import io.vertx.core.json.JsonObject
 
-
 class JsonToIssueCodec : LocalMessageCodec<JsonObject, Issue>() {
 
     companion object {

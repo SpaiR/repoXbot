@@ -19,7 +19,6 @@ class DistributionVerticle : AbstractVerticle() {
     }
 
     private fun consumePullRequest() = Handler<Message<PullRequest>> { msg ->
-        println("Pull request consumed: ${msg.body()}") // TODO: remove
         val pullRequest = msg.body()
         when (pullRequest.action) {
             PullRequestAction.OPENED -> {
@@ -33,7 +32,6 @@ class DistributionVerticle : AbstractVerticle() {
     }
 
     private fun consumeIssue() = Handler<Message<Issue>> { msg ->
-        println("Issue consumed: ${msg.body()}")    // TODO: remove
         val issue = msg.body()
         when (issue.action) {
             IssueAction.OPENED -> eventBus.send(EB_COMMAND_ISSUE_LABEL, issue)
