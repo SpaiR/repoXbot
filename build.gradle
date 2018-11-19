@@ -56,7 +56,7 @@ compileKotlin {
 }
 
 shadowJar {
-    classifier = 'fat'
+    archiveName = "${rootProject.name}-fat.jar"
 
     manifest {
         attributes(
