@@ -17,3 +17,5 @@ const val EB_GITHUB_FILE_UPDATE = "eb.github.file.update"
 const val EB_GITHUB_ISSUE_COMMENT_LIST = "eb.github.issue.comment.list"
 const val EB_GITHUB_ISSUE_COMMENT_CREATE = "eb.github.issue.comment.create"
 const val EB_GITHUB_ISSUE_COMMENT_UPDATE = "eb.github.issue.comment.update"
+
+const val EB_GITHUB_ISSUE_LABELS_ADD = "eb.github.issue.labels.add"

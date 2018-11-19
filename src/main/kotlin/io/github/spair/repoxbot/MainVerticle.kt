@@ -1,14 +1,11 @@
 package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
+import io.github.spair.repoxbot.dto.*       // ktlint-disable
 import io.github.spair.repoxbot.dto.codec.* // ktlint-disable
 import io.github.spair.repoxbot.command.UpdateChangelogVerticle
 import io.github.spair.repoxbot.command.ValidateChangelogVerticle
 import io.github.spair.repoxbot.command.LabelPullRequestVerticle
-import io.github.spair.repoxbot.dto.PullRequest
-import io.github.spair.repoxbot.dto.RemoteConfig
-import io.github.spair.repoxbot.dto.UpdateCommentInfo
-import io.github.spair.repoxbot.dto.UpdateFileInfo
 import io.github.spair.repoxbot.util.reporter
 import io.github.spair.repoxbot.util.sharedConfig
 import io.vertx.core.AbstractVerticle
@@ -63,6 +60,7 @@ class MainVerticle : AbstractVerticle() {
             registerDefaultCodec(PullRequest::class.java, PullRequestCodec())
             registerDefaultCodec(RemoteConfig::class.java, RemoteConfigCodec())
             registerDefaultCodec(UpdateCommentInfo::class.java, UpdateCommentInfoCodec())
+            registerDefaultCodec(UpdateLabelInfo::class.java, UpdateLabelInfoCodec())
 
             registerCodec(JsonToPullRequestCodec())
             registerCodec(StringJsonToRemoteConfigCodec())

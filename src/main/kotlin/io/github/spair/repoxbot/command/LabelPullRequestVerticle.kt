@@ -3,8 +3,10 @@ package io.github.spair.repoxbot.command
 import io.github.spair.repoxbot.constant.AGENT_NAME
 import io.github.spair.repoxbot.constant.EB_COMMAND_PULLREQUEST_LABEL
 import io.github.spair.repoxbot.constant.EB_GITHUB_CONFIG_READ
+import io.github.spair.repoxbot.constant.EB_GITHUB_ISSUE_LABELS_ADD
 import io.github.spair.repoxbot.dto.PullRequest
 import io.github.spair.repoxbot.dto.RemoteConfig
+import io.github.spair.repoxbot.dto.UpdateLabelInfo
 import io.github.spair.repoxbot.logic.generateChangelog
 import io.github.spair.repoxbot.logic.getLabelsFromChangelog
 import io.github.spair.repoxbot.logic.getLabelsFromDiffText
@@ -40,7 +42,7 @@ class LabelPullRequestVerticle : AbstractVerticle() {
                 }
                 labelsToAdd.addAll(getLabelsFromDiffText(diffTextFuture.result(), remoteConfig.pathsLabels))
 
-                println(labelsToAdd)
+                eventBus.send(EB_GITHUB_ISSUE_LABELS_ADD, UpdateLabelInfo(pullRequest.number, labelsToAdd))
             }
         }
     }

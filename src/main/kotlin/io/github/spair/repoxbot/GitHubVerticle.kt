@@ -3,10 +3,7 @@
 package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
-import io.github.spair.repoxbot.dto.IssueComment
-import io.github.spair.repoxbot.dto.RemoteConfig
-import io.github.spair.repoxbot.dto.UpdateCommentInfo
-import io.github.spair.repoxbot.dto.UpdateFileInfo
+import io.github.spair.repoxbot.dto.*       // ktlint-disable
 import io.github.spair.repoxbot.dto.codec.IssueCommentListCodec
 import io.github.spair.repoxbot.dto.codec.StringJsonToRemoteConfigCodec
 import io.github.spair.repoxbot.util.getSharedConfig
@@ -19,6 +16,7 @@ import io.vertx.core.eventbus.ReplyFailure
 import io.vertx.core.http.HttpClientRequest
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpMethod
+import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.core.logging.LoggerFactory
 import java.net.HttpURLConnection
@@ -39,6 +37,8 @@ class GithubVerticle : AbstractVerticle() {
         eventBus.localConsumer<Int>(EB_GITHUB_ISSUE_COMMENT_LIST, listIssueComments())
         eventBus.localConsumer<UpdateCommentInfo>(EB_GITHUB_ISSUE_COMMENT_CREATE, createIssueComment())
         eventBus.localConsumer<UpdateCommentInfo>(EB_GITHUB_ISSUE_COMMENT_UPDATE, updateIssueComment())
+
+        eventBus.localConsumer<UpdateLabelInfo>(EB_GITHUB_ISSUE_LABELS_ADD, addIssueLabels())
     }
 
     private fun readRemoteConfig() = Handler<Message<JsonObject>> { msg ->
@@ -114,6 +114,15 @@ class GithubVerticle : AbstractVerticle() {
         }.end(JsonObject().apply {
             put(BODY, updateCommentInfo.text)
         }.toBuffer())
+    }
+
+    private fun addIssueLabels() = Handler<Message<UpdateLabelInfo>> { msg ->
+        val updateLabelInfo = msg.body()
+        httpClient.postAbs(issueLabels(updateLabelInfo.id)).authHeader().jsonHeader().handler {
+            if (it.statusCode() != HttpURLConnection.HTTP_OK) {
+                logger.error("Unable to add labels to issue with id: ${updateLabelInfo.id}")
+            }
+        }.end(JsonArray(updateLabelInfo.labels.toList()).toBuffer())
     }
 
     private fun getFileSha(path: String): Future<String> {
@@ -196,4 +205,8 @@ private inline fun GithubVerticle.issueComments(issueNum: Int): String {
 
 private inline fun GithubVerticle.issueComment(commentId: Int): String {
     return "$GITHUB_API_URL/repos/${getSharedConfig(GITHUB_ORG)}/${getSharedConfig(GITHUB_REPO)}/issues/comments/$commentId"
+}
+
+private inline fun GithubVerticle.issueLabels(issueNum: Int): String {
+    return "$GITHUB_API_URL/repos/${getSharedConfig(GITHUB_ORG)}/${getSharedConfig(GITHUB_REPO)}/issues/$issueNum/labels"
 }
