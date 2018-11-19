@@ -2,6 +2,7 @@ package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.EB_COMMAND_CHANGELOG_UPDATE
 import io.github.spair.repoxbot.constant.EB_COMMAND_CHANGELOG_VALIDATE
+import io.github.spair.repoxbot.constant.EB_COMMAND_PULLREQUEST_LABEL
 import io.github.spair.repoxbot.constant.EB_EVENT_PULLREQUEST
 import io.github.spair.repoxbot.dto.PullRequest
 import io.github.spair.repoxbot.dto.PullRequestAction
@@ -21,7 +22,11 @@ class DistributionVerticle : AbstractVerticle() {
         println("Pull request consumed: ${msg.body()}") // TODO: remove
         val pullRequest = msg.body()
         when (pullRequest.action) {
-            PullRequestAction.OPENED, PullRequestAction.EDITED -> eventBus.send(EB_COMMAND_CHANGELOG_VALIDATE, pullRequest)
+            PullRequestAction.OPENED -> {
+                eventBus.send(EB_COMMAND_PULLREQUEST_LABEL, pullRequest)
+                eventBus.send(EB_COMMAND_CHANGELOG_VALIDATE, pullRequest)
+            }
+            PullRequestAction.EDITED -> eventBus.send(EB_COMMAND_CHANGELOG_VALIDATE, pullRequest)
             PullRequestAction.MERGED -> eventBus.send(EB_COMMAND_CHANGELOG_UPDATE, pullRequest)
             PullRequestAction.CLOSED, PullRequestAction.UNDEFINED -> {}
         }

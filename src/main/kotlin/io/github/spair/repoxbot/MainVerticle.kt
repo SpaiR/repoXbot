@@ -4,6 +4,7 @@ import io.github.spair.repoxbot.constant.*  // ktlint-disable
 import io.github.spair.repoxbot.dto.codec.* // ktlint-disable
 import io.github.spair.repoxbot.command.UpdateChangelogVerticle
 import io.github.spair.repoxbot.command.ValidateChangelogVerticle
+import io.github.spair.repoxbot.command.LabelPullRequestVerticle
 import io.github.spair.repoxbot.dto.PullRequest
 import io.github.spair.repoxbot.dto.RemoteConfig
 import io.github.spair.repoxbot.dto.UpdateCommentInfo
@@ -77,7 +78,8 @@ class MainVerticle : AbstractVerticle() {
             initVerticle(GithubVerticle::class.java.name),
             initVerticle(DistributionVerticle::class.java.name),
             initVerticle(UpdateChangelogVerticle::class.java.name),
-            initVerticle(ValidateChangelogVerticle::class.java.name)
+            initVerticle(ValidateChangelogVerticle::class.java.name),
+            initVerticle(LabelPullRequestVerticle::class.java.name)
         )).setHandler(reporter(future) {
             logger.info("All verticles deployed")
         })

@@ -21,20 +21,16 @@ class UpdateChangelogVerticle : AbstractVerticle() {
         eventBus.localConsumer<PullRequest>(EB_COMMAND_CHANGELOG_UPDATE) { msg ->
             generateChangelog(msg.body())?.letIfNotEmpty { changelog ->
                 eventBus.send<RemoteConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
-                    if (readConfigRes.succeeded()) {
-                        val remoteConfig = readConfigRes.result().body()
-                        val changelogPath = remoteConfig.path
-                        eventBus.send<String>(EB_GITHUB_FILE_READ, changelogPath) { readFileRes ->
-                            if (readFileRes.succeeded()) {
-                                val updateMessage = "Automatic changelog generation for PR #${changelog.pullRequestNumber}"
-                                val newChangelogHtml = mergeChangelogWithHtml(changelog, readFileRes.result().body())
-                                eventBus.send(EB_GITHUB_FILE_UPDATE, UpdateFileInfo(changelogPath, updateMessage, newChangelogHtml))
-                            } else {
-                                logger.error("Fail to read changelog file", readFileRes.cause())
-                            }
+                    val remoteConfig = readConfigRes.result().body()
+                    val changelogPath = remoteConfig.path
+                    eventBus.send<String>(EB_GITHUB_FILE_READ, changelogPath) { readFileRes ->
+                        if (readFileRes.succeeded()) {
+                            val updateMessage = "Automatic changelog generation for PR #${changelog.pullRequestNumber}"
+                            val newChangelogHtml = mergeChangelogWithHtml(changelog, readFileRes.result().body())
+                            eventBus.send(EB_GITHUB_FILE_UPDATE, UpdateFileInfo(changelogPath, updateMessage, newChangelogHtml))
+                        } else {
+                            logger.error("Fail to read changelog file", readFileRes.cause())
                         }
-                    } else {
-                        logger.error("Fail to read config from github", readConfigRes.cause())
                     }
                 }
             }

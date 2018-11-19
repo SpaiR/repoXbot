@@ -38,24 +38,20 @@ class ValidateChangelogVerticle : AbstractVerticle() {
 
     private fun validateFromConfig(changelog: Changelog) {
         eventBus.send<RemoteConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
-            if (readConfigRes.succeeded()) {
-                val configChangelogClasses = readConfigRes.result().body().classes
+            val configChangelogClasses = readConfigRes.result().body().classes
 
-                if (configChangelogClasses.isEmpty()) {
+            if (configChangelogClasses.isEmpty()) {
+                sendOrUpdateStatus("$CHANGELOG_STATUS: $OK_STATUS", changelog.pullRequestNumber)
+                return@send
+            }
+
+            findInvalidClasses(configChangelogClasses, changelog.entries).let {
+                if (it.isEmpty()) {
                     sendOrUpdateStatus("$CHANGELOG_STATUS: $OK_STATUS", changelog.pullRequestNumber)
-                    return@send
+                } else {
+                    val statusMsg = "$CHANGELOG_STATUS: $FAIL_STATUS Invalid changelog classes (${it.joinToString()})"
+                    sendOrUpdateStatus(statusMsg, changelog.pullRequestNumber)
                 }
-
-                findInvalidClasses(configChangelogClasses, changelog.entries).let {
-                    if (it.isEmpty()) {
-                        sendOrUpdateStatus("$CHANGELOG_STATUS: $OK_STATUS", changelog.pullRequestNumber)
-                    } else {
-                        val statusMsg = "$CHANGELOG_STATUS: $FAIL_STATUS Invalid changelog classes (${it.joinToString()})"
-                        sendOrUpdateStatus(statusMsg, changelog.pullRequestNumber)
-                    }
-                }
-            } else {
-                logger.error("Fail to read config from github", readConfigRes.cause())
             }
         }
     }
