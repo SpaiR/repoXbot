@@ -23,9 +23,8 @@ class JsonToPullRequestCodec : LocalMessageCodec<JsonObject, PullRequest>() {
         val diffLink = pullRequestObject.getString(DIFF_URL)
         val body = pullRequestObject.getString(BODY)
         val sender = json.getJsonObject(SENDER).getString(LOGIN)
-        val touchedLabel = getTouchedLabel(json)
 
-        return PullRequest(action, author, number, title, link, diffLink, body, sender, touchedLabel)
+        return PullRequest(action, author, number, title, link, diffLink, body, sender)
     }
 
     override fun name(): String = NAME
@@ -37,6 +36,4 @@ class JsonToPullRequestCodec : LocalMessageCodec<JsonObject, PullRequest>() {
             }
         }
     }
-
-    private fun getTouchedLabel(json: JsonObject): String = json.getJsonObject(LABEL)?.getString(NAME) ?: ""
 }

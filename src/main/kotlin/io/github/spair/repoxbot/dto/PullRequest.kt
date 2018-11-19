@@ -8,8 +8,7 @@ data class PullRequest(
     val link: String,
     val diffLink: String,
     val body: String,
-    val sender: String,
-    val touchedLabel: String
+    val sender: String
 )
 
 enum class PullRequestAction {

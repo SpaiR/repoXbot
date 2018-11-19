@@ -73,7 +73,7 @@ class GithubVerticle : AbstractVerticle() {
                 val fileSha = ar.result()
                 httpClient.putAbs(contents(updateFileInfo.path)).authHeader().jsonHeader().handler {
                     if (it.statusCode() != HttpURLConnection.HTTP_OK) {
-                        logger.error("Unable to update Github file: ${updateFileInfo.path}")
+                        logger.error("Unable to update Github file: ${updateFileInfo.path} Code: ${it.statusCode()}")
                     }
                 }.end(JsonObject().apply {
                     put(MESSAGE, updateFileInfo.message)
@@ -81,7 +81,7 @@ class GithubVerticle : AbstractVerticle() {
                     put(SHA, fileSha)
                 }.toBuffer())
             } else {
-                logger.error("Error while updating github file", ar.cause())
+                logger.error("Error while updating Github file", ar.cause())
             }
         }
     }
@@ -99,7 +99,7 @@ class GithubVerticle : AbstractVerticle() {
         val updateCommentInfo = msg.body()
         httpClient.postAbs(issueComments(updateCommentInfo.id)).authHeader().jsonHeader().handler {
             if (it.statusCode() != HttpURLConnection.HTTP_CREATED) {
-                logger.error("Unable to create comment for issue: ${updateCommentInfo.id}")
+                logger.error("Unable to create comment for issue: ${updateCommentInfo.id} Code: ${it.statusCode()}")
             }
         }.end(JsonObject().apply {
             put(BODY, updateCommentInfo.text)
@@ -110,7 +110,7 @@ class GithubVerticle : AbstractVerticle() {
         val updateCommentInfo = msg.body()
         httpClient.requestAbs(HttpMethod.PATCH, issueComment(updateCommentInfo.id)).authHeader().jsonHeader().handler {
             if (it.statusCode() != HttpURLConnection.HTTP_OK) {
-                logger.error("Unable to update comment with id: ${updateCommentInfo.id}")
+                logger.error("Unable to update comment with id: ${updateCommentInfo.id} Code: ${it.statusCode()}")
             }
         }.end(JsonObject().apply {
             put(BODY, updateCommentInfo.text)
@@ -121,7 +121,7 @@ class GithubVerticle : AbstractVerticle() {
         val updateLabelInfo = msg.body()
         httpClient.postAbs(issueLabels(updateLabelInfo.id)).authHeader().jsonHeader().handler {
             if (it.statusCode() != HttpURLConnection.HTTP_OK) {
-                logger.error("Unable to add labels to issue with id: ${updateLabelInfo.id}")
+                logger.error("Unable to add labels to issue with id: ${updateLabelInfo.id} Code: ${it.statusCode()}")
             }
         }.end(JsonArray(updateLabelInfo.labels.toList()).toBuffer())
     }
@@ -157,28 +157,31 @@ class GithubVerticle : AbstractVerticle() {
 
     private fun recursiveLinkProcess(link: String, action: (JsonObject) -> Unit): Future<Unit> {
         val nextLinkReg = "<([\\w\\d/?=:.]*)>;[ ]rel=\"next\"".toRegex()
-        val future = Future.future<Unit>()
-
-        fun process(linkToProcess: String) {
-            httpClient.getAbs(linkToProcess).authHeader().handler { resp ->
-                resp.bodyHandler { body ->
-                    body.toJsonArray().forEach { node -> if (node is JsonObject) action(node) }
-                    val headers = resp.headers()
-                    if (headers.contains("link")) {
-                        val nextLink = nextLinkReg.toPattern().matcher(headers["link"])
-                        if (nextLink.find()) {
-                            process(nextLink.group(1))
-                        } else {
-                            future.complete()
+        return Future.future<Unit>().apply {
+            fun process(linkToProcess: String) {
+                httpClient.getAbs(linkToProcess).authHeader().handler { resp ->
+                    resp.bodyHandler { body ->
+                        body.toJsonArray().forEach { node ->
+                            if (node is JsonObject) {
+                                action(node)
+                            }
                         }
-                    } else {
-                        future.complete()
+                        val headers = resp.headers()
+                        if (headers.contains("link")) {
+                            val nextLink = nextLinkReg.toPattern().matcher(headers["link"])
+                            if (nextLink.find()) {
+                                process(nextLink.group(1))
+                            } else {
+                                complete()
+                            }
+                        } else {
+                            complete()
+                        }
                     }
-                }
-            }.end()
+                }.end()
+            }
+            process(link)
         }
-        process(link)
-        return future
     }
 
     private fun HttpClientRequest.authHeader(): HttpClientRequest = apply {
@@ -187,7 +190,7 @@ class GithubVerticle : AbstractVerticle() {
     }
 
     private fun HttpClientRequest.jsonHeader(): HttpClientRequest = apply {
-        putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON)
+        putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
     }
 }
 
