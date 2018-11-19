@@ -31,11 +31,11 @@ class MainVerticle : AbstractVerticle() {
 
     private fun initializeConfig() {
         val setConfigOrThrow = { propName: String ->
-            sharedConfig[propName] = System.getProperty(propName)
+            sharedConfig[propName] = System.getenv(propName)
                 ?: throw IllegalStateException("'$propName' value should be specified as system variable")
         }
         val setConfigOrDefault = { propName: String, default: String ->
-            sharedConfig[propName] = System.getProperty(propName) ?: default
+            sharedConfig[propName] = System.getenv(propName) ?: default
         }
 
         setConfigOrThrow(GITHUB_ORG)
