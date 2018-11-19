@@ -17,8 +17,8 @@ class UpdateCommentInfoCodec : LocalMessageCodec<UpdateCommentInfo, UpdateCommen
     override fun name(): String = this::class.java.name
 }
 
-class RemoteConfigCodec : LocalMessageCodec<RemoteConfig, RemoteConfig>() {
-    override fun transform(remoteConfig: RemoteConfig): RemoteConfig = remoteConfig
+class RepoXBotConfigCodec : LocalMessageCodec<RepoXBotConfig, RepoXBotConfig>() {
+    override fun transform(repoXBotConfig: RepoXBotConfig): RepoXBotConfig = repoXBotConfig
     override fun name(): String = this::class.java.name
 }
 

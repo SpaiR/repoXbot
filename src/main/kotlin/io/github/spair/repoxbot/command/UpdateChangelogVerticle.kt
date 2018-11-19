@@ -5,7 +5,7 @@ import io.github.spair.repoxbot.constant.EB_GITHUB_CONFIG_READ
 import io.github.spair.repoxbot.constant.EB_GITHUB_FILE_READ
 import io.github.spair.repoxbot.constant.EB_GITHUB_FILE_UPDATE
 import io.github.spair.repoxbot.dto.PullRequest
-import io.github.spair.repoxbot.dto.RemoteConfig
+import io.github.spair.repoxbot.dto.RepoXBotConfig
 import io.github.spair.repoxbot.dto.UpdateFileInfo
 import io.github.spair.repoxbot.logic.generateChangelog
 import io.github.spair.repoxbot.logic.mergeChangelogWithHtml
@@ -20,9 +20,9 @@ class UpdateChangelogVerticle : AbstractVerticle() {
     override fun start() {
         eventBus.localConsumer<PullRequest>(EB_COMMAND_CHANGELOG_UPDATE) { msg ->
             generateChangelog(msg.body())?.letIfNotEmpty { changelog ->
-                eventBus.send<RemoteConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
-                    val remoteConfig = readConfigRes.result().body()
-                    val changelogPath = remoteConfig.path
+                eventBus.send<RepoXBotConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
+                    val config = readConfigRes.result().body()
+                    val changelogPath = config.path
                     eventBus.send<String>(EB_GITHUB_FILE_READ, changelogPath) { readFileRes ->
                         if (readFileRes.succeeded()) {
                             val updateMessage = "Automatic changelog generation for PR #${changelog.pullRequestNumber}"

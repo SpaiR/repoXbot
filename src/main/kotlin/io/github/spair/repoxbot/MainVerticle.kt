@@ -58,12 +58,12 @@ class MainVerticle : AbstractVerticle() {
         with(vertx.eventBus()) {
             registerDefaultCodec(UpdateFileInfo::class.java, UpdateFileInfoCodec())
             registerDefaultCodec(PullRequest::class.java, PullRequestCodec())
-            registerDefaultCodec(RemoteConfig::class.java, RemoteConfigCodec())
+            registerDefaultCodec(RepoXBotConfig::class.java, RepoXBotConfigCodec())
             registerDefaultCodec(UpdateCommentInfo::class.java, UpdateCommentInfoCodec())
             registerDefaultCodec(UpdateLabelInfo::class.java, UpdateLabelInfoCodec())
 
             registerCodec(JsonToPullRequestCodec())
-            registerCodec(StringJsonToRemoteConfigCodec())
+            registerCodec(StringJsonToRepoXBotConfigCodec())
             registerCodec(IssueCommentListCodec())
 
             logger.info("Event bus codecs registered")

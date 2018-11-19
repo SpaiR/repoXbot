@@ -5,7 +5,7 @@ package io.github.spair.repoxbot
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
 import io.github.spair.repoxbot.dto.*       // ktlint-disable
 import io.github.spair.repoxbot.dto.codec.IssueCommentListCodec
-import io.github.spair.repoxbot.dto.codec.StringJsonToRemoteConfigCodec
+import io.github.spair.repoxbot.dto.codec.StringJsonToRepoXBotConfigCodec
 import io.github.spair.repoxbot.util.getSharedConfig
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
@@ -29,7 +29,7 @@ class GithubVerticle : AbstractVerticle() {
     private val httpClient by lazy { vertx.createHttpClient() }
 
     override fun start() {
-        eventBus.localConsumer<JsonObject>(EB_GITHUB_CONFIG_READ, readRemoteConfig())
+        eventBus.localConsumer<JsonObject>(EB_GITHUB_CONFIG_READ, readRepoXBotConfig())
 
         eventBus.localConsumer<String>(EB_GITHUB_FILE_READ, readGithubFile())
         eventBus.localConsumer<UpdateFileInfo>(EB_GITHUB_FILE_UPDATE, updateGithubFile())
@@ -41,14 +41,14 @@ class GithubVerticle : AbstractVerticle() {
         eventBus.localConsumer<UpdateLabelInfo>(EB_GITHUB_ISSUE_LABELS_ADD, addIssueLabels())
     }
 
-    private fun readRemoteConfig() = Handler<Message<JsonObject>> { msg ->
+    private fun readRepoXBotConfig() = Handler<Message<JsonObject>> { msg ->
         httpClient.getAbs(contents(getSharedConfig(CONFIG_PATH))).authHeader().handler {
             if (it.statusCode() == HttpURLConnection.HTTP_OK) {
                 it.bodyHandler { body ->
-                    msg.reply(body.toJsonObject().readContents(), DeliveryOptions().setCodecName(StringJsonToRemoteConfigCodec.NAME))
+                    msg.reply(body.toJsonObject().readContents(), DeliveryOptions().setCodecName(StringJsonToRepoXBotConfigCodec.NAME))
                 }
             } else {
-                msg.reply(RemoteConfig())
+                msg.reply(RepoXBotConfig())
             }
         }.end()
     }

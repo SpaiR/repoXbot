@@ -5,7 +5,7 @@ import io.github.spair.repoxbot.constant.EB_COMMAND_PULLREQUEST_LABEL
 import io.github.spair.repoxbot.constant.EB_GITHUB_CONFIG_READ
 import io.github.spair.repoxbot.constant.EB_GITHUB_ISSUE_LABELS_ADD
 import io.github.spair.repoxbot.dto.PullRequest
-import io.github.spair.repoxbot.dto.RemoteConfig
+import io.github.spair.repoxbot.dto.RepoXBotConfig
 import io.github.spair.repoxbot.dto.UpdateLabelInfo
 import io.github.spair.repoxbot.logic.generateChangelog
 import io.github.spair.repoxbot.logic.getLabelsFromChangelog
@@ -28,21 +28,21 @@ class LabelPullRequestVerticle : AbstractVerticle() {
         eventBus.localConsumer<PullRequest>(EB_COMMAND_PULLREQUEST_LABEL) { msg ->
             val pullRequest = msg.body()
 
-            val remoteConfigFuture = Future.future<RemoteConfig>()
+            val configFuture = Future.future<RepoXBotConfig>()
             val diffTextFuture = Future.future<String>()
 
-            eventBus.send<RemoteConfig>(EB_GITHUB_CONFIG_READ, null) { remoteConfigFuture.complete(it.result().body()) }
+            eventBus.send<RepoXBotConfig>(EB_GITHUB_CONFIG_READ, null) { configFuture.complete(it.result().body()) }
             loadDiffText(pullRequest.diffLink).setHandler { diffTextFuture.complete(it.result()) }
 
             val labelsToAdd = mutableSetOf<String>()
 
-            CompositeFuture.all(remoteConfigFuture, diffTextFuture).setHandler {
-                val remoteConfig = remoteConfigFuture.result()
+            CompositeFuture.all(configFuture, diffTextFuture).setHandler {
+                val config = configFuture.result()
 
                 generateChangelog(pullRequest)?.letIfNotEmpty { changelog ->
-                    labelsToAdd.addAll(getLabelsFromChangelog(changelog, remoteConfig.classes))
+                    labelsToAdd.addAll(getLabelsFromChangelog(changelog, config.classes))
                 }
-                labelsToAdd.addAll(getLabelsFromDiffText(diffTextFuture.result(), remoteConfig.pathsLabels))
+                labelsToAdd.addAll(getLabelsFromDiffText(diffTextFuture.result(), config.pathsLabels))
 
                 eventBus.send(EB_GITHUB_ISSUE_LABELS_ADD, UpdateLabelInfo(pullRequest.number, labelsToAdd))
             }
