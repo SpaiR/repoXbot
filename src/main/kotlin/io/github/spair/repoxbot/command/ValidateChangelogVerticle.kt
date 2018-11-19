@@ -38,7 +38,7 @@ class ValidateChangelogVerticle : AbstractVerticle() {
 
     private fun validateFromConfig(changelog: Changelog) {
         eventBus.send<RepoXBotConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
-            val configChangelogClasses = readConfigRes.result().body().classes
+            val configChangelogClasses = readConfigRes.result().body().changelogClasses
 
             if (configChangelogClasses.isEmpty()) {
                 sendOrUpdateStatus("$CHANGELOG_STATUS: $OK_STATUS", changelog.pullRequestNumber)

@@ -22,7 +22,7 @@ class UpdateChangelogVerticle : AbstractVerticle() {
             generateChangelog(msg.body())?.letIfNotEmpty { changelog ->
                 eventBus.send<RepoXBotConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
                     val config = readConfigRes.result().body()
-                    val changelogPath = config.path
+                    val changelogPath = config.changelogPath
                     eventBus.send<String>(EB_GITHUB_FILE_READ, changelogPath) { readFileRes ->
                         if (readFileRes.succeeded()) {
                             val updateMessage = "Automatic changelog generation for PR #${changelog.pullRequestNumber}"

@@ -1,7 +1,7 @@
 package io.github.spair.repoxbot.dto
 
 data class RepoXBotConfig(
-    val path: String = "html/changelog.html",
-    val classes: Map<String, String> = emptyMap(),
-    val pathsLabels: Map<String, String> = emptyMap()
+    val changelogPath: String = "html/changelog.html",
+    val changelogClasses: Map<String, String> = emptyMap(),
+    val diffPathsLabels: Map<String, String> = emptyMap()
 )

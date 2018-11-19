@@ -40,9 +40,9 @@ class LabelPullRequestVerticle : AbstractVerticle() {
                 val config = configFuture.result()
 
                 generateChangelog(pullRequest)?.letIfNotEmpty { changelog ->
-                    labelsToAdd.addAll(getLabelsFromChangelog(changelog, config.classes))
+                    labelsToAdd.addAll(getLabelsFromChangelog(changelog, config.changelogClasses))
                 }
-                labelsToAdd.addAll(getLabelsFromDiffText(diffTextFuture.result(), config.pathsLabels))
+                labelsToAdd.addAll(getLabelsFromDiffText(diffTextFuture.result(), config.diffPathsLabels))
 
                 eventBus.send(EB_GITHUB_ISSUE_LABELS_ADD, UpdateLabelInfo(pullRequest.number, labelsToAdd))
             }
