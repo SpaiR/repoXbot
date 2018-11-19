@@ -11,7 +11,9 @@ import io.github.spair.repoxbot.logic.generateChangelog
 import io.github.spair.repoxbot.logic.getLabelsFromChangelog
 import io.github.spair.repoxbot.logic.getLabelsFromDiffText
 import io.github.spair.repoxbot.util.getSharedConfig
-import io.vertx.core.*
+import io.vertx.core.AbstractVerticle
+import io.vertx.core.Future
+import io.vertx.core.CompositeFuture
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.logging.LoggerFactory
 import java.net.HttpURLConnection
