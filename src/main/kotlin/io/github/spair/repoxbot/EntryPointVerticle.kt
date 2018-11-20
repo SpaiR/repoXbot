@@ -26,7 +26,7 @@ class EntryPointVerticle : AbstractVerticle() {
             if (isValidRequest(request)) {
                 handle(request)
             } else {
-                request.response().setStatusCode(HttpURLConnection.HTTP_NOT_FOUND).end()
+                request.response().close()
             }
         }.exceptionHandler {
             logger.error("Server exception", it)
@@ -76,7 +76,7 @@ class EntryPointVerticle : AbstractVerticle() {
             EVENT_PING -> {
                 val zen = payload.getString("zen")
                 logger.info("Ping event caught. Zen: $zen")
-                "Pong! Zen was: '$zen'"
+                "Pong! Zen: '$zen'"
             }
             EVENT_PULL_REQUEST -> {
                 vertx.eventBus().send(EB_EVENT_PULLREQUEST, payload, JsonToPullRequestCodec.NAME)

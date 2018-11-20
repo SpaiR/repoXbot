@@ -26,13 +26,29 @@ class MainVerticle : AbstractVerticle() {
     override fun start(startFuture: Future<Void>) {
         initializeConfig()
         registerEventBusCodecs()
-        deployVerticles(startFuture)
+
+        Future.future<Void>().apply {
+            deployVerticles(this)
+        }.setHandler {
+            if (it.succeeded()) {
+                logger.info("RepoXBot configured and initialized! " +
+                    "GitHub path: '${sharedConfig[GITHUB_ORG]}/${sharedConfig[GITHUB_REPO]}' " +
+                    "Entry point: '${sharedConfig[ENTRY_POINT]}' " +
+                    "Port: '${sharedConfig[PORT]}' " +
+                    "Remote config path: '${sharedConfig[CONFIG_PATH]}'"
+                )
+                startFuture.complete()
+            } else {
+                logger.error("Something went wrong and RepoXBot can't be configured and initialized")
+                startFuture.fail(it.cause())
+            }
+        }
     }
 
     private fun initializeConfig() {
         val setConfigOrThrow = { propName: String ->
             sharedConfig[propName] = System.getenv(propName)
-                ?: throw IllegalStateException("'$propName' value should be specified as system variable")
+                ?: throw IllegalStateException("'$propName' value should be specified as environment variable")
         }
         val setConfigOrDefault = { propName: String, default: String ->
             sharedConfig[propName] = System.getenv(propName) ?: default
@@ -49,10 +65,7 @@ class MainVerticle : AbstractVerticle() {
         setConfigOrDefault(CONFIG_PATH, DEFAULT_CONFIG_PATH)
         setConfigOrDefault(AGENT_NAME, DEFAULT_AGENT_NAME)
 
-        logger.info("Configuration initialized! " +
-            "RepoXBot now works with next GitHub repository: ${sharedConfig[GITHUB_ORG]}/${sharedConfig[GITHUB_REPO]}; " +
-            "Entry point: '${sharedConfig[ENTRY_POINT]}'; Port: '${sharedConfig[PORT]}'"
-        )
+        logger.info("Configuration initialized")
     }
 
     private fun registerEventBusCodecs() {
@@ -74,7 +87,11 @@ class MainVerticle : AbstractVerticle() {
     }
 
     private fun deployVerticles(future: Future<Void>) {
-        CompositeFuture.all(listOf(
+        fun initVerticle(verticleName: String): Future<Void> = Future.future<Void>().apply {
+            vertx.deployVerticle(verticleName, reporter(this) { logger.info("Verticle '$verticleName' deployed") })
+        }
+
+        val verticlesList = listOf(
             initVerticle(EntryPointVerticle::class.java.name),
 
             initVerticle(GithubVerticle::class.java.name),
@@ -84,14 +101,10 @@ class MainVerticle : AbstractVerticle() {
             initVerticle(ValidateChangelogVerticle::class.java.name),
             initVerticle(LabelPullRequestVerticle::class.java.name),
             initVerticle(LabelIssueVerticle::class.java.name)
-        )).setHandler(reporter(future) {
-            logger.info("All verticles deployed")
-        })
-    }
+        )
 
-    private fun initVerticle(verticleName: String): Future<Void> {
-        return Future.future<Void>().also {
-            vertx.deployVerticle(verticleName, reporter(it) { logger.info("Verticle '$verticleName' deployed") })
-        }
+        CompositeFuture.all(verticlesList).setHandler(reporter(future) {
+            logger.info("All verticles deployed (${verticlesList.size})")
+        })
     }
 }

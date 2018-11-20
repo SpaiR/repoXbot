@@ -156,7 +156,7 @@ class GithubVerticle : AbstractVerticle() {
     }
 
     private fun recursiveLinkProcess(link: String, action: (JsonObject) -> Unit): Future<Unit> {
-        val nextLinkReg = "<([\\w\\d/?=:.]*)>;[ ]rel=\"next\"".toRegex()
+        val nextLinkRegx = "<([\\w\\d/?=:.]*)>;[ ]rel=\"next\"".toRegex()
         return Future.future<Unit>().apply {
             fun process(linkToProcess: String) {
                 httpClient.getAbs(linkToProcess).authHeader().handler { resp ->
@@ -168,7 +168,7 @@ class GithubVerticle : AbstractVerticle() {
                         }
                         val headers = resp.headers()
                         if (headers.contains("link")) {
-                            val nextLink = nextLinkReg.toPattern().matcher(headers["link"])
+                            val nextLink = nextLinkRegx.toPattern().matcher(headers["link"])
                             if (nextLink.find()) {
                                 process(nextLink.group(1))
                             } else {

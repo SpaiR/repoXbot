@@ -43,7 +43,7 @@ private fun String.sanitize() = replace("(?s)<!--.*?-->".toRegex(), "").replace(
 
 private fun getAuthor(changelogText: String, pullRequestAuthor: String): String {
     return changelogText.substringBefore("\n").let {
-        if (it.isEmpty()) {
+        if (it.isBlank()) {
             pullRequestAuthor
         } else {
             it
