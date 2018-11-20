@@ -34,7 +34,6 @@ class MainVerticle : AbstractVerticle() {
                 logger.info("RepoXBot configured and initialized! " +
                     "GitHub path: '${sharedConfig[GITHUB_ORG]}/${sharedConfig[GITHUB_REPO]}' " +
                     "Entry point: '${sharedConfig[ENTRY_POINT]}' " +
-                    "Port: '${sharedConfig[PORT]}' " +
                     "Remote config path: '${sharedConfig[CONFIG_PATH]}'"
                 )
                 startFuture.complete()
@@ -59,7 +58,6 @@ class MainVerticle : AbstractVerticle() {
         setConfigOrThrow(GITHUB_TOKEN)
         setConfigOrThrow(GITHUB_SECRET)
 
-        setConfigOrDefault(PORT, DEFAULT_PORT)
         setConfigOrDefault(ENTRY_POINT, DEFAULT_ENTRY_POINT)
         setConfigOrDefault(CHECK_SIGN, DEFAULT_CHECK_SIGN)
         setConfigOrDefault(CONFIG_PATH, DEFAULT_CONFIG_PATH)

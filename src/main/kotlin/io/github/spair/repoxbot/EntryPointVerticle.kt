@@ -30,7 +30,7 @@ class EntryPointVerticle : AbstractVerticle() {
             }
         }.exceptionHandler {
             logger.error("Server exception", it)
-        }.listen(getSharedConfig(PORT).toInt(), reporter(startFuture))
+        }.listen(8080, reporter(startFuture))
     }
 
     private fun isValidRequest(request: HttpServerRequest): Boolean {
