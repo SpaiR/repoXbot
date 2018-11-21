@@ -50,7 +50,7 @@ class EntryPointVerticle : AbstractVerticle() {
     private fun handle(request: HttpServerRequest) {
         request.bodyHandler { body ->
             try {
-                val signature = request.headers()[SIGNATURE]
+                val signature = request.headers()[SIGNATURE].substringAfter("sha1=")
                 val secretKey = getSharedConfig(GITHUB_SECRET)
                 val payload = body.toJsonObject()
 
