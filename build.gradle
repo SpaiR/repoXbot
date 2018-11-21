@@ -33,7 +33,7 @@ repositories {
 }
 
 group = 'io.github.spair.repoxbot'
-version = '1.0.0-SNAPSHOT'
+version = '1.0.0'
 
 sourceCompatibility = '1.8'
 mainClassName = 'io.vertx.core.Launcher'
