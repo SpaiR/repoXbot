@@ -3,6 +3,7 @@ package io.github.spair.repoxbot.command
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
 import io.github.spair.repoxbot.dto.*       // ktlint-disable
 import io.github.spair.repoxbot.logic.generateChangelog
+import io.github.spair.repoxbot.util.readConfig
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.logging.LoggerFactory
 
@@ -37,12 +38,12 @@ class ValidateChangelogVerticle : AbstractVerticle() {
     }
 
     private fun validateFromConfig(changelog: Changelog) {
-        eventBus.send<RepoXBotConfig>(EB_GITHUB_CONFIG_READ, null) { readConfigRes ->
-            val configChangelogClasses = readConfigRes.result().body().changelogClasses
+        eventBus.readConfig { config ->
+            val configChangelogClasses = config.changelogClasses
 
             if (configChangelogClasses.isEmpty()) {
                 sendOrUpdateStatus("$CHANGELOG_STATUS: $OK_STATUS", changelog.pullRequestNumber)
-                return@send
+                return@readConfig
             }
 
             findInvalidClasses(configChangelogClasses, changelog.entries).let {

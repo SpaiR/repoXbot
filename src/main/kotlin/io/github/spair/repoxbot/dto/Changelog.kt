@@ -8,7 +8,7 @@ data class Changelog(
 ) {
     fun isEmpty(): Boolean = entries.isEmpty()
 
-    inline fun <R> letIfNotEmpty(block: (Changelog) -> R) {
+    inline fun <R> runIfPresent(block: (Changelog) -> R) {
         if (!isEmpty()) block(this)
     }
 }
