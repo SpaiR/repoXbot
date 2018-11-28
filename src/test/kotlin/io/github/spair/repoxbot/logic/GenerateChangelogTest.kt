@@ -76,6 +76,6 @@ internal class `Test changelog generation from pull request` {
 
     private fun createPullRequest(body: String): PullRequest = PullRequest(
         PullRequestAction.MERGED, AUTHOR_NAME, PR_NUM, "Title",
-        PR_LINK, "Diff Link", body, "Sender"
+        PR_LINK, "Diff Link", body
     )
 }

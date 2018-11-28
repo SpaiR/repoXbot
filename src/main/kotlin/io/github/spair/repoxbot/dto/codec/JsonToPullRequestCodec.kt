@@ -22,9 +22,8 @@ class JsonToPullRequestCodec : LocalMessageCodec<JsonObject, PullRequest>() {
         val link = pullRequestObject.getString(HTML_URL)
         val diffLink = pullRequestObject.getString(DIFF_URL)
         val body = pullRequestObject.getString(BODY)
-        val sender = json.getJsonObject(SENDER).getString(LOGIN)
 
-        return PullRequest(action, author, number, title, link, diffLink, body, sender)
+        return PullRequest(action, author, number, title, link, diffLink, body)
     }
 
     override fun name(): String = NAME

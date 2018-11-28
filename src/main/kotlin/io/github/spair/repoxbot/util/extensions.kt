@@ -5,6 +5,7 @@ import io.github.spair.repoxbot.dto.RepoXBotConfig
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.core.eventbus.EventBus
+import io.vertx.core.eventbus.Message
 
 // AbstractVerticle
 val AbstractVerticle.sharedConfig
@@ -23,3 +24,6 @@ fun EventBus.send(address: String, message: Any, codecName: String) = send(addre
 fun EventBus.readConfig(handler: (RepoXBotConfig) -> Unit): EventBus {
     return this.send<RepoXBotConfig>(EB_GITHUB_CONFIG_READ, null) { handler(it.result().body()) }!!
 }
+
+// Message
+fun <T> Message<T>.replyWithCodecName(msg: Any, codecName: String) = reply(msg, DeliveryOptions().setCodecName(codecName))

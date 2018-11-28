@@ -7,8 +7,7 @@ data class PullRequest(
     val title: String,
     val link: String,
     val diffLink: String,
-    val body: String,
-    val sender: String
+    val body: String
 )
 
 enum class PullRequestAction {

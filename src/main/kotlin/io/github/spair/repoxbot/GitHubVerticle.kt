@@ -5,10 +5,10 @@ import io.github.spair.repoxbot.dto.*       // ktlint-disable
 import io.github.spair.repoxbot.dto.codec.IssueCommentListCodec
 import io.github.spair.repoxbot.dto.codec.StringJsonToRepoXBotConfigCodec
 import io.github.spair.repoxbot.util.getSharedConfig
+import io.github.spair.repoxbot.util.replyWithCodecName
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
 import io.vertx.core.Handler
-import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.core.eventbus.Message
 import io.vertx.core.eventbus.ReplyFailure
 import io.vertx.core.http.HttpClientRequest
@@ -43,7 +43,7 @@ class GithubVerticle : AbstractVerticle() {
         httpClient.getAbs(contents(getSharedConfig(CONFIG_PATH))).authHeader().handler {
             if (it.statusCode() == HttpURLConnection.HTTP_OK) {
                 it.bodyHandler { body ->
-                    msg.reply(body.toJsonObject().readContents(), DeliveryOptions().setCodecName(StringJsonToRepoXBotConfigCodec.NAME))
+                    msg.replyWithCodecName(body.toJsonObject().getString(CONTENT).decodeBase64(), StringJsonToRepoXBotConfigCodec.NAME)
                 }
             } else {
                 msg.reply(RepoXBotConfig())
@@ -55,7 +55,7 @@ class GithubVerticle : AbstractVerticle() {
         httpClient.getAbs(contents(msg.body())).authHeader().handler {
             if (it.statusCode() == HttpURLConnection.HTTP_OK) {
                 it.bodyHandler { body ->
-                    msg.reply(body.toJsonObject().readContents())
+                    msg.reply(body.toJsonObject().getString(CONTENT).decodeBase64())
                 }
             } else {
                 logger.error("Unable to read Github file: ${msg.body()} Code: ${it.statusCode()}")
@@ -89,7 +89,7 @@ class GithubVerticle : AbstractVerticle() {
         recursiveLinkProcess(issueComments(msg.body())) {
             issueComments.add(IssueComment(it.getInteger(ID), it.getJsonObject(USER).getString(LOGIN), it.getString(BODY)))
         }.setHandler {
-            msg.reply(issueComments.toList(), DeliveryOptions().setCodecName(IssueCommentListCodec.NAME))
+            msg.replyWithCodecName(issueComments.toList(), IssueCommentListCodec.NAME)
         }
     }
 
@@ -191,8 +191,6 @@ class GithubVerticle : AbstractVerticle() {
         putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
     }
 }
-
-private fun JsonObject.readContents(): String = getString(CONTENT).decodeBase64()
 
 private fun String.decodeBase64(): String = Base64.getMimeDecoder().decode(this).toString(Charsets.UTF_8)
 private fun String.encodeBase64(): String = Base64.getEncoder().encodeToString(toByteArray())
