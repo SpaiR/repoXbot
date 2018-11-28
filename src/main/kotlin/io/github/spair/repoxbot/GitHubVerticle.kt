@@ -1,5 +1,3 @@
-@file:Suppress("NOTHING_TO_INLINE")
-
 package io.github.spair.repoxbot
 
 import io.github.spair.repoxbot.constant.*  // ktlint-disable
@@ -199,18 +197,18 @@ private fun JsonObject.readContents(): String = getString(CONTENT).decodeBase64(
 private fun String.decodeBase64(): String = Base64.getMimeDecoder().decode(this).toString(Charsets.UTF_8)
 private fun String.encodeBase64(): String = Base64.getEncoder().encodeToString(toByteArray())
 
-private inline fun GithubVerticle.contents(relPath: String): String {
+private fun GithubVerticle.contents(relPath: String): String {
     return "$GITHUB_API_URL/repos/${getSharedConfig(GITHUB_ORG)}/${getSharedConfig(GITHUB_REPO)}/contents/$relPath"
 }
 
-private inline fun GithubVerticle.issueComments(issueNum: Int): String {
+private fun GithubVerticle.issueComments(issueNum: Int): String {
     return "$GITHUB_API_URL/repos/${getSharedConfig(GITHUB_ORG)}/${getSharedConfig(GITHUB_REPO)}/issues/$issueNum/comments"
 }
 
-private inline fun GithubVerticle.issueComment(commentId: Int): String {
+private fun GithubVerticle.issueComment(commentId: Int): String {
     return "$GITHUB_API_URL/repos/${getSharedConfig(GITHUB_ORG)}/${getSharedConfig(GITHUB_REPO)}/issues/comments/$commentId"
 }
 
-private inline fun GithubVerticle.issueLabels(issueNum: Int): String {
+private fun GithubVerticle.issueLabels(issueNum: Int): String {
     return "$GITHUB_API_URL/repos/${getSharedConfig(GITHUB_ORG)}/${getSharedConfig(GITHUB_REPO)}/issues/$issueNum/labels"
 }
