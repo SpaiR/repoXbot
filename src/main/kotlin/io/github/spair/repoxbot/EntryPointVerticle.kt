@@ -26,7 +26,7 @@ class EntryPointVerticle : AbstractVerticle() {
             if (isValidRequest(request)) {
                 handle(request)
             } else {
-                request.response().close()
+                request.response().setStatusCode(HttpURLConnection.HTTP_NOT_ACCEPTABLE).end()
             }
         }.exceptionHandler {
             logger.error("Server exception", it)
@@ -35,7 +35,6 @@ class EntryPointVerticle : AbstractVerticle() {
 
     private fun isValidRequest(request: HttpServerRequest): Boolean {
         val methodIsPost = request.method() == HttpMethod.POST
-        val entryPointValid = request.path() == getSharedConfig(ENTRY_POINT)
         val contentTypeValid = request.headers().contains(HttpHeaders.CONTENT_TYPE) &&
             request.getHeader(HttpHeaders.CONTENT_TYPE) == "application/json"
 
@@ -44,7 +43,7 @@ class EntryPointVerticle : AbstractVerticle() {
 
         val hasEventHeader = request.headers().contains(EVENT_HEADER)
 
-        return methodIsPost && entryPointValid && contentTypeValid && signHeaderChecked && hasEventHeader
+        return methodIsPost && contentTypeValid && signHeaderChecked && hasEventHeader
     }
 
     private fun handle(request: HttpServerRequest) {
