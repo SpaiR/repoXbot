@@ -14,7 +14,7 @@ fun generateChangelog(pullRequest: PullRequest): Changelog? {
 private fun findChangelogText(pullRequestBody: String): String? {
     return clText.toPattern().matcher(pullRequestBody.sanitize()).let {
         if (it.find()) {
-            (it.group(1) ?: it.group(2))!!  // 1 - :cl:, 2 - 🆑
+            (it.group(1) ?: it.group(2))!! // 1 - :cl:, 2 - 🆑
         } else {
             null
         }
