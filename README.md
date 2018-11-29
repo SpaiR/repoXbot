@@ -16,7 +16,7 @@ RepoXBot docker image is available [here](https://hub.docker.com/r/spair/repoxbo
 environmental variables to configure application.
 
 ```
-docker run -d -p 8080:8080 \
+docker run -d -p <your port>:8080 \
 -e github_org=<your organization> \
 -e github_repo=<your repository> \
 -e github_token=<token to access GitHub API> \
@@ -34,9 +34,9 @@ docker run -d -p 8080:8080 \
 --name=rxbot spair/repoxbot
 ```
 
-After application has started you should configure your webhook to send events on `<your dns>/repoxbot`.
+After application has started you should configure webhook to send events on your application address.
 The only events you should send is `pull_request` and `issues`.
-With sending `ping` event you should receive next response: `Pong! Zen: '<zen message here>'`
+While sending `ping` event you should receive next response: `Pong! Zen: '<zen message here>'`.
 
 ## Application options
 ### Mandatory
@@ -46,7 +46,6 @@ With sending `ping` event you should receive next response: `Pong! Zen: '<zen me
 - github_secret - secret code which you configured with webhook
 
 ### Optional
-- entry_point - entry point to send events (default: /repoxbot)
 - check_sign - enable/disable check for signature sent with webhook (default: true)
 - config_path - path to json in repository to configure application features (default: ~/.repoxbot.config.json)
 - agent_name - agent name which will be used during interaction with GitHub APi
