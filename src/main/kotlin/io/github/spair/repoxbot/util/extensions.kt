@@ -26,4 +26,4 @@ fun EventBus.readConfig(handler: (RepoXBotConfig) -> Unit): EventBus {
 }
 
 // Message
-fun <T> Message<T>.replyWithCodecName(msg: Any, codecName: String) = reply(msg, DeliveryOptions().setCodecName(codecName))
+fun <T> Message<T>.reply(msg: Any, codecName: String) = reply(msg, DeliveryOptions().setCodecName(codecName))

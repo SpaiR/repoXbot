@@ -5,7 +5,7 @@ import io.github.spair.repoxbot.dto.*       // ktlint-disable
 import io.github.spair.repoxbot.dto.codec.IssueCommentListCodec
 import io.github.spair.repoxbot.dto.codec.StringJsonToRepoXBotConfigCodec
 import io.github.spair.repoxbot.util.getSharedConfig
-import io.github.spair.repoxbot.util.replyWithCodecName
+import io.github.spair.repoxbot.util.reply
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
 import io.vertx.core.Handler
@@ -43,7 +43,7 @@ class GithubVerticle : AbstractVerticle() {
         httpClient.getAbs(contents(getSharedConfig(CONFIG_PATH))).authHeader().handler {
             if (it.statusCode() == HttpURLConnection.HTTP_OK) {
                 it.bodyHandler { body ->
-                    msg.replyWithCodecName(body.toJsonObject().getString(CONTENT).decodeBase64(), StringJsonToRepoXBotConfigCodec.NAME)
+                    msg.reply(body.toJsonObject().getString(CONTENT).decodeBase64(), StringJsonToRepoXBotConfigCodec.NAME)
                 }
             } else {
                 msg.reply(RepoXBotConfig())
@@ -89,7 +89,7 @@ class GithubVerticle : AbstractVerticle() {
         recursiveLinkProcess(issueComments(msg.body())) {
             issueComments.add(IssueComment(it.getInteger(ID), it.getJsonObject(USER).getString(LOGIN), it.getString(BODY)))
         }.setHandler {
-            msg.replyWithCodecName(issueComments.toList(), IssueCommentListCodec.NAME)
+            msg.reply(issueComments.toList(), IssueCommentListCodec.NAME)
         }
     }
 
