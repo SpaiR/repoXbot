@@ -23,7 +23,22 @@ private val diffText = """
             \ No newline at end of file
         """.trimIndent()
 
+private val classes = mapOf(
+    "rscadd" to "AddLabel",
+    "bugfix" to ""
+)
+
 internal class `Test get labels methods` {
+
+    @Test
+    fun `When getting from changelog and changelog is null`() {
+        assertTrue(getLabelsFromChangelog(null, classes).isEmpty())
+    }
+
+    @Test
+    fun `When getting from changelog and changelog is empty`() {
+        assertTrue(getLabelsFromChangelog(Changelog("", "", 0, emptyList()), classes).isEmpty())
+    }
 
     @Test
     fun `When getting from changelog and classes map is empty`() {
@@ -32,10 +47,7 @@ internal class `Test get labels methods` {
 
     @Test
     fun `When getting from changelog and classes map is not empty`() {
-        val result = getLabelsFromChangelog(changelog, mapOf(
-            "rscadd" to "AddLabel",
-            "bugfix" to ""
-        ))
+        val result = getLabelsFromChangelog(changelog, classes)
         assertEquals(setOf("AddLabel"), result)
     }
 

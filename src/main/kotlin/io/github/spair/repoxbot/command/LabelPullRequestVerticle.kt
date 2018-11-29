@@ -38,14 +38,12 @@ class LabelPullRequestVerticle : AbstractVerticle() {
                 val labelsToAdd = mutableSetOf<String>()
                 val config = configFuture.result()
 
-                generateChangelog(pullRequest)?.runIfPresent { changelog ->
-                    labelsToAdd.addAll(getLabelsFromChangelog(changelog, config.changelogClasses))
+                labelsToAdd.addAll(getLabelsFromChangelog(generateChangelog(pullRequest), config.changelogClasses))
+                labelsToAdd.addAll(getLabelsFromDiffText(diffTextFuture.result(), config.diffPathsLabels))
+
+                if (labelsToAdd.isNotEmpty()) {
+                    eventBus.send(EB_GITHUB_ISSUE_LABELS_ADD, UpdateLabelInfo(pullRequest.number, labelsToAdd))
                 }
-
-                val diffText = diffTextFuture.result()
-                labelsToAdd.addAll(getLabelsFromDiffText(diffText, config.diffPathsLabels))
-
-                eventBus.send(EB_GITHUB_ISSUE_LABELS_ADD, UpdateLabelInfo(pullRequest.number, labelsToAdd))
             }
         }
     }
