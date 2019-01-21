@@ -12,6 +12,7 @@ import io.github.spair.repoxbot.util.sharedConfig
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.CompositeFuture
 import io.vertx.core.Future
+import io.vertx.core.Verticle
 import io.vertx.core.logging.LoggerFactory
 import java.io.File
 
@@ -83,20 +84,20 @@ class MainVerticle : AbstractVerticle() {
     }
 
     private fun deployVerticles(future: Future<Void>) {
-        fun initVerticle(verticleName: String): Future<Void> = Future.future<Void>().apply {
-            vertx.deployVerticle(verticleName, reporter(this) { logger.info("Verticle '$verticleName' deployed") })
+        fun initVerticle(verticle: Verticle): Future<Void> = Future.future<Void>().apply {
+            vertx.deployVerticle(verticle, reporter(this) { logger.info("Verticle '${verticle.javaClass.name}' deployed") })
         }
 
         val verticlesList = listOf(
-            initVerticle(EntryPointVerticle::class.java.name),
+            initVerticle(EntryPointVerticle()),
 
-            initVerticle(GithubVerticle::class.java.name),
-            initVerticle(DistributionVerticle::class.java.name),
+            initVerticle(GithubVerticle()),
+            initVerticle(DistributionVerticle()),
 
-            initVerticle(UpdateChangelogVerticle::class.java.name),
-            initVerticle(ValidateChangelogVerticle::class.java.name),
-            initVerticle(LabelPullRequestVerticle::class.java.name),
-            initVerticle(LabelIssueVerticle::class.java.name)
+            initVerticle(UpdateChangelogVerticle()),
+            initVerticle(ValidateChangelogVerticle()),
+            initVerticle(LabelPullRequestVerticle()),
+            initVerticle(LabelIssueVerticle())
         )
 
         CompositeFuture.all(verticlesList).setHandler(reporter(future) {

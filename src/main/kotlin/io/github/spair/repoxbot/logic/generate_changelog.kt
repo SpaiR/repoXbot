@@ -39,8 +39,6 @@ private fun parseChangelog(changelogText: String, pullRequest: PullRequest): Cha
     return Changelog(author, pullRequest.link, pullRequest.number, changelogEntries.toList())
 }
 
-private fun String.sanitize() = replace("(?s)<!--.*?-->".toRegex(), "").replace("[\\n\\r]".toRegex(), "\n")
-
 private fun getAuthor(changelogText: String, pullRequestAuthor: String): String {
     return changelogText.substringBefore("\n").let {
         if (it.isBlank()) {
@@ -50,6 +48,8 @@ private fun getAuthor(changelogText: String, pullRequestAuthor: String): String 
         }
     }.trim()
 }
+
+private fun String.sanitize() = replace("(?s)<!--.*?-->".toRegex(), "").replace("[\\n\\r]".toRegex(), "\n")
 
 private fun String.ensureDotEnd(): String {
     return this[length - 1].let { ch -> if (ch != '.' && ch != '?' && ch != '!') plus('.') else this }

@@ -53,10 +53,7 @@ shadowJar {
     getArchiveFileName().set("${rootProject.name}.jar")
 
     manifest {
-        attributes(
-            'Main-Verticle': 'io.github.spair.repoxbot.MainVerticle',
-            'Build-Version': version
-        )
+        attributes('Main-Verticle': 'io.github.spair.repoxbot.MainVerticle')
     }
 
     mergeServiceFiles {
