@@ -1,12 +1,11 @@
 FROM openjdk:8-jre-alpine
+WORKDIR /usr/repoxbot
 
-ENV REPOXBOT_FILE repoXbot-fat.jar
-ENV REPOXBOT_HOME /usr/repoxbot
+ENV REPOXBOT_FILE repoXbot.jar
+
+COPY build/libs/$REPOXBOT_FILE .
 
 EXPOSE 8080
 
-COPY build/libs/$REPOXBOT_FILE $REPOXBOT_HOME/
-
-WORKDIR $REPOXBOT_HOME
 ENTRYPOINT ["sh", "-c"]
 CMD ["exec java -Xms16m -Xmx32m -jar $REPOXBOT_FILE"]
