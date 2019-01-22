@@ -5,6 +5,7 @@ import io.github.spair.repoxbot.dto.*       // ktlint-disable
 import io.github.spair.repoxbot.dto.codec.IssueCommentListCodec
 import io.github.spair.repoxbot.dto.codec.StringJsonToRepoXBotConfigCodec
 import io.github.spair.repoxbot.util.getSharedConfig
+import io.github.spair.repoxbot.util.relLocation
 import io.github.spair.repoxbot.util.reply
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
@@ -29,7 +30,7 @@ class GithubVerticle : AbstractVerticle() {
     override fun start() {
         eventBus.localConsumer<JsonObject>(EB_GITHUB_CONFIG_READ, readRepoXBotConfig())
 
-        eventBus.localConsumer<String>(EB_GITHUB_FILE_READ, readGithubFile())
+        eventBus.localConsumer<FileLocation>(EB_GITHUB_FILE_READ, readGithubFile())
         eventBus.localConsumer<UpdateFileInfo>(EB_GITHUB_FILE_UPDATE, updateGithubFile())
 
         eventBus.localConsumer<Int>(EB_GITHUB_ISSUE_COMMENT_LIST, listIssueComments())
@@ -40,7 +41,7 @@ class GithubVerticle : AbstractVerticle() {
     }
 
     private fun readRepoXBotConfig() = Handler<Message<JsonObject>> { msg ->
-        httpClient.getAbs(contents(getSharedConfig(CONFIG_PATH))).authHeader().handler {
+        httpClient.getAbs(contents(relLocation(getSharedConfig(CONFIG_PATH)))).authHeader().handler {
             if (it.statusCode() == HttpURLConnection.HTTP_OK) {
                 it.bodyHandler { body ->
                     msg.reply(body.toJsonObject().getString(CONTENT).decodeBase64(), StringJsonToRepoXBotConfigCodec.NAME)
@@ -51,7 +52,7 @@ class GithubVerticle : AbstractVerticle() {
         }.end()
     }
 
-    private fun readGithubFile() = Handler<Message<String>> { msg ->
+    private fun readGithubFile() = Handler<Message<FileLocation>> { msg ->
         httpClient.getAbs(contents(msg.body())).authHeader().handler {
             if (it.statusCode() == HttpURLConnection.HTTP_OK) {
                 it.bodyHandler { body ->
@@ -66,12 +67,12 @@ class GithubVerticle : AbstractVerticle() {
 
     private fun updateGithubFile() = Handler<Message<UpdateFileInfo>> { msg ->
         val updateFileInfo = msg.body()
-        getFileSha(updateFileInfo.path).setHandler { ar ->
+        getFileSha(updateFileInfo.location).setHandler { ar ->
             if (ar.succeeded()) {
                 val fileSha = ar.result()
-                httpClient.putAbs(contents(updateFileInfo.path)).authHeader().jsonHeader().handler {
+                httpClient.putAbs(contents(updateFileInfo.location)).authHeader().jsonHeader().handler {
                     if (it.statusCode() != HttpURLConnection.HTTP_OK) {
-                        logger.error("Unable to update Github file: ${updateFileInfo.path} Code: ${it.statusCode()}")
+                        logger.error("Unable to update Github file: ${updateFileInfo.location} Code: ${it.statusCode()}")
                     }
                 }.end(JsonObject().apply {
                     put(MESSAGE, updateFileInfo.message)
@@ -124,22 +125,22 @@ class GithubVerticle : AbstractVerticle() {
         }.end(JsonArray(updateLabelInfo.labels.toList()).toBuffer())
     }
 
-    private fun getFileSha(path: String): Future<String> {
+    private fun getFileSha(location: FileLocation): Future<String> {
         var dirPath: String
         var fileName: String
 
-        with("(.*)/(.*)".toPattern().matcher(path)) {
+        with("(.*)/(.*)".toPattern().matcher(location.path)) {
             if (find()) {
                 dirPath = group(1)
                 fileName = group(2)
             } else {
                 dirPath = ""
-                fileName = path
+                fileName = location.path
             }
         }
 
         return Future.future<String>().apply {
-            httpClient.getAbs(contents(dirPath)).authHeader().handler {
+            httpClient.getAbs(contents(FileLocation(location.org, location.repo, dirPath))).authHeader().handler {
                 it.bodyHandler { body ->
                     for (node in body.toJsonArray()) {
                         if (node is JsonObject && node.getString(NAME) == fileName) {
@@ -147,7 +148,7 @@ class GithubVerticle : AbstractVerticle() {
                             return@bodyHandler
                         }
                     }
-                    fail(IllegalArgumentException("Can't get file SHA from path: $path"))
+                    fail(IllegalArgumentException("Can't get file SHA from path: $location"))
                 }
             }.end()
         }
@@ -195,8 +196,8 @@ class GithubVerticle : AbstractVerticle() {
 private fun String.decodeBase64(): String = Base64.getMimeDecoder().decode(this).toString(Charsets.UTF_8)
 private fun String.encodeBase64(): String = Base64.getEncoder().encodeToString(toByteArray())
 
-private fun GithubVerticle.contents(relPath: String): String {
-    return "$GITHUB_API_URL/repos/${getSharedConfig(GITHUB_ORG)}/${getSharedConfig(GITHUB_REPO)}/contents/$relPath"
+private fun GithubVerticle.contents(location: FileLocation): String {
+    return "$GITHUB_API_URL/repos/${location.org}/${location.repo}/contents/${location.path}"
 }
 
 private fun GithubVerticle.issueComments(issueNum: Int): String {

@@ -20,12 +20,11 @@ class UpdateChangelogVerticle : AbstractVerticle() {
         eventBus.localConsumer<PullRequest>(EB_COMMAND_CHANGELOG_UPDATE) { msg ->
             generateChangelog(msg.body())?.runIfPresent { changelog ->
                 eventBus.readConfig { config ->
-                    val changelogPath = config.changelogPath
-                    eventBus.send<String>(EB_GITHUB_FILE_READ, changelogPath) { readFileRes ->
+                    eventBus.send<String>(EB_GITHUB_FILE_READ, config.changelogLocation) { readFileRes ->
                         if (readFileRes.succeeded()) {
                             val newChangelogHtml = mergeChangelogWithHtml(changelog, readFileRes.result().body())
                             val updateMessage = "Automatic changelog generation for PR #${changelog.pullRequestNumber}"
-                            eventBus.send(EB_GITHUB_FILE_UPDATE, UpdateFileInfo(changelogPath, updateMessage, newChangelogHtml))
+                            eventBus.send(EB_GITHUB_FILE_UPDATE, UpdateFileInfo(config.changelogLocation, updateMessage, newChangelogHtml))
                         } else {
                             logger.error("Fail to read changelog file", readFileRes.cause())
                         }

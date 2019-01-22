@@ -1,6 +1,9 @@
 package io.github.spair.repoxbot.util
 
 import io.github.spair.repoxbot.constant.EB_GITHUB_CONFIG_READ
+import io.github.spair.repoxbot.constant.GITHUB_ORG
+import io.github.spair.repoxbot.constant.GITHUB_REPO
+import io.github.spair.repoxbot.dto.FileLocation
 import io.github.spair.repoxbot.dto.RepoXBotConfig
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.eventbus.DeliveryOptions
@@ -12,6 +15,8 @@ val AbstractVerticle.sharedConfig
     get() = vertx.sharedData().getLocalMap<String, String>("SHARED_CONFIGURATION_MAP")!!
 
 fun AbstractVerticle.getSharedConfig(key: String) = sharedConfig[key]!!
+
+fun AbstractVerticle.relLocation(path: String) = FileLocation(getSharedConfig(GITHUB_ORG), getSharedConfig(GITHUB_REPO), path)
 
 // Enum
 inline fun <reified E : Enum<E>> valueOfIgnoreCase(name: String, default: E) = enumValues<E>().find {
