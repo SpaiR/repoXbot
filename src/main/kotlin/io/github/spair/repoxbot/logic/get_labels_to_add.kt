@@ -25,7 +25,7 @@ fun getLabelsFromDiffText(diffText: String, pathsLabels: Map<String, String>): S
 
     pathsLabels.forEach { regexPath, labelName ->
         diffText.reader().forEachLine { diffLine ->
-            if (regexPath.toRegex().toPattern().matcher(diffLine).find()) {
+            if (regexPath.toPattern().matcher(diffLine).find()) {
                 labelsToAdd.add(labelName)
             }
         }

@@ -12,7 +12,7 @@ import io.vertx.core.eventbus.Message
 
 // AbstractVerticle
 val AbstractVerticle.sharedConfig
-    get() = vertx.sharedData().getLocalMap<String, String>("SHARED_CONFIGURATION_MAP")!!
+    get() = vertx.sharedData().getLocalMap<String, String>("SC")!!
 
 fun AbstractVerticle.getSharedConfig(key: String) = sharedConfig[key]!!
 
