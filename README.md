@@ -7,6 +7,7 @@ Next features are available:
  - changelog creation
  - changelog validation
  - labeling of pull requests and issues
+ - working with separate repository for changelog
  
 Bot interacts with repository through GitHub API and GitHub Webhooks so make sure that you understand how to create
 GitHub token and configure webhook in your repository.
@@ -47,8 +48,10 @@ While sending `ping` event you should receive next response: `Pong! Zen: '<zen m
 
 ### Optional
 - check_sign - enable/disable check for signature sent with webhook (default: true)
-- config_path - path to json in repository to configure application features (default: ~/.repoxbot.config.json)
-- agent_name - agent name which will be used during interaction with GitHub APi
+- config_path - path to json in repository to configure application features (default: .repoxbot.config.json)
+- agent_name - agent name which will be used during interaction with GitHub APi (default: RepoXBot-Automation-Agent)
+- use_hash - enable/disable hash creating after changelog updating (default: true)
+- hash_path - if hash functionality enabled this can change file path to save hash (default: hash.txt)
 
 ## Features configuration
 To enable changelog generation / changelog validation / pull request labeling you should create configuration json
@@ -58,7 +61,11 @@ Configuration example:
 
 ```
 {
-  "changelogPath": "changelog.html",
+  "changelogLocation": {
+    "org": "TauCetiStation",
+    "repo": "changelog",
+    "path": "index.html"
+  },
   "changelogClasses": {
     "rscadd": "Add",
     "bugfix": "Fix"
@@ -69,6 +76,6 @@ Configuration example:
 }
 ```
 
-- changelogPath - path to changelog file which should be modified
+- changelogLocation - location to changelog file (it could be configured to absolutely different repository then codebase location)
 - changelogClasses - key is class name used in 'inbody' changelog, value is label which will be added to PR if class name was found
 - diffPathsLabels - key is regex expression (Java rules) and the value is label which will be added to PR if expression will match anything in PR diff
