@@ -9,6 +9,8 @@ import io.vertx.core.AbstractVerticle
 import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.core.eventbus.EventBus
 import io.vertx.core.eventbus.Message
+import java.math.BigInteger
+import java.security.MessageDigest
 
 // AbstractVerticle
 val AbstractVerticle.sharedConfig
@@ -32,3 +34,9 @@ fun EventBus.readConfig(handler: (RepoXBotConfig) -> Unit): EventBus {
 
 // Message
 fun <T> Message<T>.reply(msg: Any, codecName: String) = reply(msg, DeliveryOptions().setCodecName(codecName))
+
+// String
+fun String.md5(): String {
+    val md = MessageDigest.getInstance("MD5")
+    return BigInteger(1, md.digest(toByteArray())).toString(16).padStart(32, '0')
+}

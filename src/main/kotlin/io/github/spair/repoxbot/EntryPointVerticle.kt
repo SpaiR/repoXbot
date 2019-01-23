@@ -49,13 +49,13 @@ class EntryPointVerticle : AbstractVerticle() {
     private fun handle(request: HttpServerRequest) {
         request.bodyHandler { body ->
             try {
-                val signature = request.headers()[SIGNATURE].substringAfter("sha1=")
+                val signature = request.headers()[SIGNATURE]?.substringAfter("sha1=")
                 val secretKey = getSharedConfig(GITHUB_SECRET)
                 val payload = body.toJsonObject()
 
                 val shouldCheckSign = getSharedConfig(CHECK_SIGN).toBoolean()
 
-                if (!shouldCheckSign || (shouldCheckSign && isCorrectSignature(signature, secretKey, payload.toString()))) {
+                if (!shouldCheckSign || (shouldCheckSign && isCorrectSignature(signature!!, secretKey, payload.toString()))) {
                     val response = processPayload(request.headers()[EVENT_HEADER], payload)
                     request.response().setStatusCode(HttpURLConnection.HTTP_OK).end(response)
                 } else {

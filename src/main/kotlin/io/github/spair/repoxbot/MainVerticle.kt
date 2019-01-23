@@ -61,6 +61,8 @@ class MainVerticle : AbstractVerticle() {
         setConfigOrDefault(CHECK_SIGN, DEFAULT_CHECK_SIGN)
         setConfigOrDefault(CONFIG_PATH, DEFAULT_CONFIG_PATH)
         setConfigOrDefault(AGENT_NAME, DEFAULT_AGENT_NAME)
+        setConfigOrDefault(USE_HASH, DEFAULT_USE_HASH)
+        setConfigOrDefault(HASH_PATH, DEFAULT_HASH_PATH)
 
         logger.info("Configuration initialized")
     }
@@ -73,6 +75,7 @@ class MainVerticle : AbstractVerticle() {
             registerDefaultCodec(RepoXBotConfig::class.java, RepoXBotConfigCodec())
             registerDefaultCodec(UpdateCommentInfo::class.java, UpdateCommentInfoCodec())
             registerDefaultCodec(UpdateLabelInfo::class.java, UpdateLabelInfoCodec())
+            registerDefaultCodec(FileLocation::class.java, FileLocationCodec())
 
             registerCodec(JsonToPullRequestCodec())
             registerCodec(StringJsonToRepoXBotConfigCodec())

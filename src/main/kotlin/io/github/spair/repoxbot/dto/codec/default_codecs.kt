@@ -31,3 +31,8 @@ class IssueCodec : LocalMessageCodec<Issue, Issue>() {
     override fun transform(issue: Issue): Issue = issue
     override fun name(): String = this::class.java.name
 }
+
+class FileLocationCodec : LocalMessageCodec<FileLocation, FileLocation>() {
+    override fun transform(fileLocation: FileLocation) = fileLocation
+    override fun name(): String = this::class.java.name
+}
